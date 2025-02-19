@@ -29,7 +29,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
   <a
     href={href}
     onClick={onClick}
-    className="block px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:text-primary dark:text-white md:inline-block"
+    className="block px-4 py-2 text-sm font-medium text-white transition-colors hover:text-primary/80 md:inline-block"
   >
     {children}
   </a>
@@ -127,39 +127,45 @@ export default function HomePage() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
-      <nav className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md dark:bg-gray-900/80">
-        <div className="container mx-auto flex items-center justify-between p-4">
-          <div className="text-xl font-bold text-primary dark:text-white md:text-2xl">
-            Gifted Homes and Apartments
+      <nav className="absolute top-0 z-30 w-full">
+        <div className="container mx-auto flex items-center justify-between p-0">
+          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+            <img
+              src="/logo.png"
+              alt="Gifted Homes and Apartments"
+              className="h-full w-auto object-contain"
+            />
           </div>
           
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            {isMenuOpen ? 
-              <X className="h-6 w-6 text-gray-800 dark:text-white" /> : 
-              <Menu className="h-6 w-6 text-gray-800 dark:text-white" />
-            }
-          </button>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <NavItem href="#home">Home</NavItem>
-            <NavItem href="#about">About</NavItem>
-            <NavItem href="#properties">Properties</NavItem>
-            <NavItem href="#contact">Contact</NavItem>
-            
+          <div className="flex items-center">
+            {/* Mobile Menu Button */}
             <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden rounded-full p-2 hover:bg-white/20"
             >
-              {darkMode ? 
-                <Sun className="h-5 w-5 text-white" /> : 
-                <Moon className="h-5 w-5 text-gray-800" />
+              {isMenuOpen ? 
+                <X className="h-6 w-6 text-white" /> : 
+                <Menu className="h-6 w-6 text-white" />
               }
             </button>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              {/* <NavItem href="#home">Home</NavItem>
+              <NavItem href="#about">About</NavItem> */}
+              <NavItem href="#properties">Properties</NavItem>
+              <NavItem href="#contact">Contact</NavItem>
+              
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="rounded-full p-2 hover:bg-white/20 text-white"
+              >
+                {darkMode ? 
+                  <Sun className="h-5 w-5" /> : 
+                  <Moon className="h-5 w-5" />
+                }
+              </button>
+            </div>
           </div>
         </div>
 
@@ -170,17 +176,17 @@ export default function HomePage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
+              className="md:hidden bg-black/70 backdrop-blur-md"
             >
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-                <NavItem href="#home" onClick={() => setIsMenuOpen(false)}>Home</NavItem>
-                <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem>
+                {/* <NavItem href="#home" onClick={() => setIsMenuOpen(false)}>Home</NavItem>
+                <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem> */}
                 <NavItem href="#properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
                 <NavItem href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</NavItem>
                 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-800 dark:text-white"
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white"
                 >
                   <span>Toggle Theme</span>
                   {darkMode ? 
@@ -225,8 +231,12 @@ export default function HomePage() {
       <footer className="bg-white py-12 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="text-xl font-bold text-primary dark:text-white md:text-2xl">
-              Gifted Homes and Apartments
+            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+              <img
+                src="/logo.png"
+                alt="Gifted Homes and Apartments"
+                className="h-full w-auto object-contain"
+              />
             </div>
             
             <div className="flex space-x-6">
