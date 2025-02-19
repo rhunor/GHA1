@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Home, Menu, X, Building } from 'lucide-react'
+import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import WaterWave from 'react-water-wave'
 
@@ -29,7 +29,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
 
 export default function HomePage() {
   const [darkMode, setDarkMode] = useState(false)
-  const [currentImage, setCurrentImage] = useState(images[Math.floor(Math.random() * images.length)])
+  const [currentImage] = useState(images[Math.floor(Math.random() * images.length)])
   const [loading, setLoading] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
