@@ -150,11 +150,6 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 4 }} 
               className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${currentImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
             >
               <WaterWave
                 imageUrl={currentImage}
@@ -162,7 +157,6 @@ export default function HomePage() {
                 perturbance={0.03}
                 resolution={512}
                 style={{
-                  position: 'absolute',
                   width: '100%',
                   height: '100%',
                   backgroundSize: 'cover',
@@ -171,17 +165,30 @@ export default function HomePage() {
               >
                 {() => (
                   <div className="h-screen">
-                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
                     
                     <div className="absolute inset-0 flex items-center justify-center px-4">
                       <div className="text-center text-white">
-                        <h1 className="mb-6 text-4xl font-bold md:text-6xl">
+                        <motion.h1
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.8 }}
+                          className="mb-6 text-4xl font-bold md:text-6xl"
+                        >
                           Find Your Dream Home
-                        </h1>
-                        <p className="mb-8 text-lg md:text-xl">
+                        </motion.h1>
+                        <motion.p
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.7, duration: 0.8 }}
+                          className="mb-8 text-lg md:text-xl"
+                        >
                           Discover luxury properties in Lekki Phase 1
-                        </p>
+                        </motion.p>
                         <motion.button
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.9, duration: 0.8 }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           className="rounded-full bg-primary px-6 py-3 md:px-8 md:py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
