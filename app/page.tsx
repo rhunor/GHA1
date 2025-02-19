@@ -2,7 +2,15 @@
 import React, { useState, useEffect } from 'react'
 import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import WaterWave from 'react-water-wave'
+import dynamic from 'next/dynamic'
+
+// Dynamically import WaterWave with no SSR
+const WaterWave = dynamic(() => import('react-water-wave'), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+  ),
+})
 
 const images = [
   '/1.jpg',
@@ -27,16 +35,60 @@ const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
   </a>
 )
 
+// HeroContent component to avoid prop drilling
+const HeroContent = () => (
+  <div className="h-screen">
+    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+    
+    <div className="absolute inset-0 flex items-center justify-center px-4">
+      <div className="text-center text-white">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="mb-6 text-4xl font-bold md:text-6xl"
+        >
+          Find Your Dream Home
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="mb-8 text-lg md:text-xl"
+        >
+          Discover luxury properties in Lekki Phase 1
+        </motion.p>
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 0.8 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="rounded-full bg-primary px-6 py-3 md:px-8 md:py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
+        >
+          View Properties
+        </motion.button>
+      </div>
+    </div>
+  </div>
+)
+
 export default function HomePage() {
   const [darkMode, setDarkMode] = useState(false)
   const [currentImage] = useState(images[Math.floor(Math.random() * images.length)])
   const [loading, setLoading] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
     const timer = setTimeout(() => setLoading(false), 2000)
     return () => clearTimeout(timer)
   }, [])
+
+  if (!isMounted) {
+    return null
+  }
 
   if (loading) {
     return (
@@ -163,42 +215,7 @@ export default function HomePage() {
                   backgroundPosition: 'center'
                 }}
               >
-                {() => (
-                  <div className="h-screen">
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-                    
-                    <div className="absolute inset-0 flex items-center justify-center px-4">
-                      <div className="text-center text-white">
-                        <motion.h1
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.8 }}
-                          className="mb-6 text-4xl font-bold md:text-6xl"
-                        >
-                          Find Your Dream Home
-                        </motion.h1>
-                        <motion.p
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7, duration: 0.8 }}
-                          className="mb-8 text-lg md:text-xl"
-                        >
-                          Discover luxury properties in Lekki Phase 1
-                        </motion.p>
-                        <motion.button
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.9, duration: 0.8 }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="rounded-full bg-primary px-6 py-3 md:px-8 md:py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
-                        >
-                          View Properties
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {() => <HeroContent />}
               </WaterWave>
             </motion.div>
           </div>
