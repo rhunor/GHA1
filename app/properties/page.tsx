@@ -6,7 +6,21 @@ import Link from 'next/link'
 import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
 
-const PropertyCard = ({ property }) => (
+interface Property {
+  id: string;
+  title: string;
+  price: string;
+  location: string;
+  thumbnail: string;
+  description: string;
+  specifications: {
+    bedrooms: number;
+    bathrooms: number;
+    size: string;
+  };
+}
+
+const PropertyCard = ({ property }: { property: Property }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
