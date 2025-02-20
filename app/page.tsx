@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 
 // Dynamically import WaterWave with no SSR
 const WaterWave = dynamic(() => import('react-water-wave'), {
@@ -48,7 +49,7 @@ const HeroContent = () => (
           transition={{ delay: 0.5, duration: 0.8 }}
           className="mb-6 text-4xl font-bold md:text-6xl"
         >
-          Find Your Dream Home
+          Find the perfect short stay apartment 
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -56,8 +57,9 @@ const HeroContent = () => (
           transition={{ delay: 0.7, duration: 0.8 }}
           className="mb-8 text-lg md:text-xl"
         >
-          Discover luxury properties in Lekki Phase 1
+          Luxury Apartments in Lekki
         </motion.p>
+        <Link href="/properties">
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,6 +70,7 @@ const HeroContent = () => (
         >
           View Properties
         </motion.button>
+        </Link>
       </div>
     </div>
   </div>
@@ -153,7 +156,7 @@ export default function HomePage() {
             <div className="hidden md:flex items-center space-x-8">
               {/* <NavItem href="#home">Home</NavItem>
               <NavItem href="#about">About</NavItem> */}
-              <NavItem href="#properties">Properties</NavItem>
+              <NavItem href="/properties">Properties</NavItem>
               <NavItem href="#contact">Contact</NavItem>
               
               <button
@@ -181,7 +184,7 @@ export default function HomePage() {
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
                 {/* <NavItem href="#home" onClick={() => setIsMenuOpen(false)}>Home</NavItem>
                 <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem> */}
-                <NavItem href="#properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
+                <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
                 <NavItem href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</NavItem>
                 
                 <button
