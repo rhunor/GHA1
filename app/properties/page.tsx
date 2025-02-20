@@ -7,7 +7,7 @@ import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
 
 interface Property {
-  id: string;
+  id: number;
   title: string;
   price: string;
   location: string;
