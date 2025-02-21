@@ -1,9 +1,10 @@
 "use client"
-import React, { useState, useEffect } from 'react'
-import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { Building } from 'lucide-react'
+import MainLayout from '@/components/layout/MainLayout'
 
 // Dynamically import WaterWave with no SSR
 const WaterWave = dynamic(() => import('react-water-wave'), {
@@ -20,23 +21,7 @@ const images = [
   '/4.jpg'
 ]
 
-interface NavItemProps {
-  href: string
-  children: React.ReactNode
-  onClick?: () => void
-}
-
-const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
-  <a
-    href={href}
-    onClick={onClick}
-    className="block px-4 py-2 text-sm font-medium text-white transition-colors hover:text-primary/80 md:inline-block"
-  >
-    {children}
-  </a>
-)
-
-// HeroContent component to avoid prop drilling
+// HeroContent component
 const HeroContent = () => (
   <div className="h-screen">
     <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
@@ -60,16 +45,16 @@ const HeroContent = () => (
           Luxury Apartments in Lekki
         </motion.p>
         <Link href="/properties">
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.8 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="rounded-full bg-primary px-6 py-3 md:px-8 md:py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
-        >
-          View Properties
-        </motion.button>
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="rounded-sm bg-gray-300 px-5 py-2 md:px-6 md:py-3 text-base font-medium text-gray-800 transition-all hover:bg-gray-400 hover:shadow-lg"
+          >
+            View Properties
+          </motion.button>
         </Link>
       </div>
     </div>
@@ -77,10 +62,8 @@ const HeroContent = () => (
 )
 
 export default function HomePage() {
-  const [darkMode, setDarkMode] = useState(false)
   const [currentImage] = useState(images[Math.floor(Math.random() * images.length)])
   const [loading, setLoading] = useState(true)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -129,80 +112,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
-      <nav className="absolute top-0 z-30 w-full">
-        <div className="container mx-auto flex items-center justify-between p-0">
-          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-            <img
-              src="/logo.png"
-              alt="Gifted Homes and Apartments"
-              className="h-full w-auto object-contain"
-            />
-          </div>
-          
-          <div className="flex items-center">
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden rounded-full p-2 hover:bg-white/20"
-            >
-              {isMenuOpen ? 
-                <X className="h-6 w-6 text-white" /> : 
-                <Menu className="h-6 w-6 text-white" />
-              }
-            </button>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              {/* <NavItem href="#home">Home</NavItem>
-              <NavItem href="#about">About</NavItem> */}
-              <NavItem href="/properties">Properties</NavItem>
-              <NavItem href="#contact">Contact</NavItem>
-              
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="rounded-full p-2 hover:bg-white/20 text-white"
-              >
-                {darkMode ? 
-                  <Sun className="h-5 w-5" /> : 
-                  <Moon className="h-5 w-5" />
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-black/70 backdrop-blur-md"
-            >
-              <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-                {/* <NavItem href="#home" onClick={() => setIsMenuOpen(false)}>Home</NavItem>
-                <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem> */}
-                <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
-                <NavItem href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</NavItem>
-                
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white"
-                >
-                  <span>Toggle Theme</span>
-                  {darkMode ? 
-                    <Sun className="h-5 w-5" /> : 
-                    <Moon className="h-5 w-5" />
-                  }
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
-
+    <MainLayout>
       <main className="relative min-h-screen">
         <div className="relative h-screen overflow-hidden">
           <div className="absolute inset-0">
@@ -230,39 +140,6 @@ export default function HomePage() {
           </div>
         </div>
       </main>
-
-      <footer className="bg-white py-12 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <img
-                src="/logo.png"
-                alt="Gifted Homes and Apartments"
-                className="h-full w-auto object-contain"
-              />
-            </div>
-            
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Twitter className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Linkedin className="h-6 w-6" />
-              </a>
-            </div>
-            
-            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-              © 2025 Gifted Homes and Apartments. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+     </MainLayout>
   )
 }

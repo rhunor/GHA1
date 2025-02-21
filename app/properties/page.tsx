@@ -1,10 +1,12 @@
-// app/properties/page.tsx
+//app/page.tsx
+
 "use client"
 import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
+import MainLayout from '@/components/layout/MainLayout'
 
 interface Property {
   id: number;
@@ -79,37 +81,36 @@ const PropertyCard = ({ property }: { property: Property }) => (
 
 export default function PropertiesPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
- <Link href="/">
-<div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-   
-            <img
-              src="/logo.png"
-              alt="Gifted Homes and Apartments"
-              className="h-full w-auto object-contain"
-            />
+    <MainLayout>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header Section with responsive padding */}
+        <div className="relative bg-primary text-white pt-32 md:pt-40 lg:pt-48 pb-16">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                Our Properties
+              </h1>
+              <p className="text-lg opacity-90">
+                Discover your perfect home from our exclusive collection
+              </p>
+            </motion.div>
           </div>
-          </Link>
-      {/* Header Section */}
-      <div className="bg-primary text-white py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Our Properties
-          </h1>
-          <p className="text-lg opacity-90">
-            Discover your perfect home from our exclusive collection
-          </p>
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900"></div>
         </div>
-      </div>
 
-      {/* Properties Grid */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
+        {/* Properties Grid */}
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            {properties.map((property) => (
+              <PropertyCard key={property.id} property={property} />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   )
 }
