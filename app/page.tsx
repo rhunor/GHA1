@@ -5,16 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-// Define WaterWave props type
-interface WaterWaveProps {
-  imageUrl: string;
-  children?: () => React.ReactNode;
-  dropRadius?: number;
-  perturbance?: number;
-  resolution?: number;
-  style?: React.CSSProperties;
-}
-
 // Dynamically import WaterWave with no SSR
 const WaterWave = dynamic(() => import('react-water-wave'), {
   ssr: false,
