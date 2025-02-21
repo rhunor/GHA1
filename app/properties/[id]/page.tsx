@@ -59,7 +59,16 @@ export default function PropertyDetailsPage() {
 
   return (
    
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-32 md:pt-40 lg:pt-48">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-0 md:pt-0 lg:pt-0">
+        <Link href="/">
+          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+            <img
+              src="/logo.png"
+              alt="Gifted Homes and Apartments"
+              className="h-full w-auto object-contain"
+            />
+          </div>
+          </Link>
         {/* Back Button */}
         <Link 
           href="/properties"

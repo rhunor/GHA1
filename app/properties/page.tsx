@@ -84,8 +84,18 @@ export default function PropertiesPage() {
   return (
     
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        
         {/* Header Section with responsive padding */}
-        <div className="relative bg-primary text-white pt-32 md:pt-40 lg:pt-48 pb-16">
+        <div className="relative bg-primary text-white pt-0 md:pt-0 lg:pt-0 pb-16">
+        <Link href="/">
+          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+            <img
+              src="/logo.png"
+              alt="Gifted Homes and Apartments"
+              className="h-full w-auto object-contain"
+            />
+          </div>
+          </Link>
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
