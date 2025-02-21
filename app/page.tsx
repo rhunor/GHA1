@@ -2,7 +2,75 @@
 import React, { useState, useEffect } from 'react'
 import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
+
+interface WaterWaveProps {
+  imageUrl: string;
+  dropRadius?: number;
+  perturbance?: number;
+  resolution?: number;
+  style?: React.CSSProperties;
+  children: (props: { pause: () => void; play: () => void }) => React.ReactNode;
+}
+
+interface BackgroundImageProps {
+  currentImage: string;
+  children: React.ReactNode;
+}
+
+function detectIncompatibleDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  const userAgent = navigator.userAgent.toLowerCase()
+  return /android/.test(userAgent)
+}
+
+// Import WaterWave without type checking
+const WaterWave = dynamic(
+  () => import('react-water-wave').then((mod) => mod.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+    ),
+  }
+)
+
+const BackgroundImage: React.FC<BackgroundImageProps> = ({ currentImage, children }) => {
+  const isIncompatibleDevice = detectIncompatibleDevice()
+
+  if (isIncompatibleDevice) {
+    return (
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(${currentImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <WaterWave
+      imageUrl={currentImage}
+      dropRadius={20}
+      perturbance={0.03}
+      resolution={512}
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      {({ pause, play }) => children}
+    </WaterWave>
+  )
+}
 
 const images = [
   '/1.jpg',
@@ -197,15 +265,12 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
+              transition={{ duration: 4 }} 
               className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${currentImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
             >
-              <HeroContent />
+              <BackgroundImage currentImage={currentImage}>
+                <HeroContent />
+              </BackgroundImage>
             </motion.div>
           </div>
         </div>
