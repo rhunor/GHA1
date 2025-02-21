@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
-import MainLayout from '@/components/layout/MainLayout'
+
 
 interface Property {
   id: number;
@@ -81,7 +81,7 @@ const PropertyCard = ({ property }: { property: Property }) => (
 
 export default function PropertiesPage() {
   return (
-    <MainLayout>
+    
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header Section with responsive padding */}
         <div className="relative bg-primary text-white pt-32 md:pt-40 lg:pt-48 pb-16">
@@ -111,6 +111,6 @@ export default function PropertiesPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+  
   )
 }

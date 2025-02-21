@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft } from 'lucide-re
 import { properties, Property } from '@/lib/propertyData'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import MainLayout from '@/components/layout/MainLayout'
+
 
 export default function PropertyDetailsPage() {
   const params = useParams()
@@ -57,7 +57,7 @@ export default function PropertyDetailsPage() {
   }
 
   return (
-    <MainLayout>
+   
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-32 md:pt-40 lg:pt-48">
         {/* Back Button */}
         <Link 
@@ -185,6 +185,6 @@ export default function PropertyDetailsPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+  
   )
 }
