@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft } from 'lucide-re
 import { properties, Property } from '@/lib/propertyData'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 
 
 export default function PropertyDetailsPage() {

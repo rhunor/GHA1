@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
-import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
+import { Facebook, Twitter, Instagram, Linkedin} from 'lucide-react'
 
 
 interface Property {
