@@ -2,16 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
-
-// Dynamically import WaterWave with no SSR
-const WaterWave = dynamic(() => import('react-water-wave'), {
-  ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-  ),
-})
 
 const images = [
   '/1.jpg',
@@ -25,24 +16,6 @@ interface NavItemProps {
   children: React.ReactNode;
   onClick?: () => void;
 }
-
-// Fallback background component with proper typing
-interface BackgroundFallbackProps {
-  imageUrl: string;
-}
-
-const BackgroundFallback: React.FC<BackgroundFallbackProps> = ({ imageUrl }) => (
-  <div 
-    className="absolute inset-0 bg-cover bg-center"
-    style={{ 
-      backgroundImage: `url(${imageUrl})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center'
-    }}
-  >
-    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-  </div>
-)
 
 const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
   <a
@@ -100,21 +73,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [isWaterWaveError, setIsWaterWaveError] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
     const timer = setTimeout(() => setLoading(false), 2000)
     return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const handleError = () => {
-      setIsWaterWaveError(true)
-    }
-
-    window.addEventListener('error', handleError)
-    return () => window.removeEventListener('error', handleError)
   }, [])
 
   if (!isMounted) {
@@ -234,27 +197,15 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 4 }} 
+              transition={{ duration: 1 }}
               className="absolute inset-0"
+              style={{
+                backgroundImage: `url(${currentImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
             >
-              {isWaterWaveError ? (
-                <BackgroundFallback imageUrl={currentImage} />
-              ) : (
-                <WaterWave
-                  imageUrl={currentImage}
-                  dropRadius={20}
-                  perturbance={0.03}
-                  resolution={512}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                >
-                  {() => <HeroContent />}
-                </WaterWave>
-              )}
+              <HeroContent />
             </motion.div>
           </div>
         </div>
