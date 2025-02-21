@@ -5,15 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-interface WaterWaveProps {
-  imageUrl: string;
-  dropRadius?: number;
-  perturbance?: number;
-  resolution?: number;
-  style?: React.CSSProperties;
-  children: (props: { pause: () => void; play: () => void }) => React.ReactNode;
-}
-
 interface BackgroundImageProps {
   currentImage: string;
   children: React.ReactNode;
@@ -25,7 +16,7 @@ function detectIncompatibleDevice(): boolean {
   return /android/.test(userAgent)
 }
 
-// Import WaterWave without type checking
+// Import WaterWave without type checking to avoid deployment issues
 const WaterWave = dynamic(
   () => import('react-water-wave').then((mod) => mod.default),
   {
@@ -67,7 +58,7 @@ const BackgroundImage: React.FC<BackgroundImageProps> = ({ currentImage, childre
         backgroundPosition: 'center'
       }}
     >
-      {({ pause, play }) => children}
+      {() => children}
     </WaterWave>
   )
 }
