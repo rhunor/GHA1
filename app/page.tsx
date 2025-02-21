@@ -5,6 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
+// Define WaterWave props type
+interface WaterWaveProps {
+  imageUrl: string;
+  children?: () => React.ReactNode;
+  dropRadius?: number;
+  perturbance?: number;
+  resolution?: number;
+  style?: React.CSSProperties;
+}
+
 // Dynamically import WaterWave with no SSR
 const WaterWave = dynamic(() => import('react-water-wave'), {
   ssr: false,
@@ -21,10 +31,28 @@ const images = [
 ]
 
 interface NavItemProps {
-  href: string
-  children: React.ReactNode
-  onClick?: () => void
+  href: string;
+  children: React.ReactNode;
+  onClick?: () => void;
 }
+
+// Fallback background component with proper typing
+interface BackgroundFallbackProps {
+  imageUrl: string;
+}
+
+const BackgroundFallback: React.FC<BackgroundFallbackProps> = ({ imageUrl }) => (
+  <div 
+    className="absolute inset-0 bg-cover bg-center"
+    style={{ 
+      backgroundImage: `url(${imageUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}
+  >
+    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+  </div>
+)
 
 const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
   <a
@@ -70,7 +98,7 @@ const HeroContent = () => (
           >
             View Properties
           </motion.button>
-          </Link>
+        </Link>
       </div>
     </div>
   </div>
@@ -82,11 +110,21 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [isWaterWaveError, setIsWaterWaveError] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
     const timer = setTimeout(() => setLoading(false), 2000)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const handleError = () => {
+      setIsWaterWaveError(true)
+    }
+
+    window.addEventListener('error', handleError)
+    return () => window.removeEventListener('error', handleError)
   }, [])
 
   if (!isMounted) {
@@ -132,15 +170,16 @@ export default function HomePage() {
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
       <nav className="absolute top-0 z-30 w-full">
         <div className="container mx-auto flex items-center justify-between p-0">
-        <Link href="/">
-          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-            <img
-              src="/logo.png"
-              alt="Gifted Homes and Apartments"
-              className="h-full w-auto object-contain"
-            />
-          </div>
+          <Link href="/">
+            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+              <img
+                src="/logo.png"
+                alt="Gifted Homes and Apartments"
+                className="h-full w-auto object-contain"
+              />
+            </div>
           </Link>
+          
           <div className="flex items-center">
             {/* Mobile Menu Button */}
             <button
@@ -155,10 +194,8 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              {/* <NavItem href="#home">Home</NavItem>*/}
               <NavItem href="#about">About</NavItem> 
               <NavItem href="/properties">Properties</NavItem>
-              {/* <NavItem href="#contact">Contact</NavItem> */}
               
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -183,16 +220,13 @@ export default function HomePage() {
               className="md:hidden bg-black/70 backdrop-blur-md"
             >
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-                {/* <NavItem href="#home" onClick={() => setIsMenuOpen(false)}>Home</NavItem>*/}
                 <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
                 <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
-                {/* <NavItem href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</NavItem> */}
                 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
                   className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white"
                 >
-                  {/* <span>Toggle Theme</span> */}
                   {darkMode ? 
                     <Sun className="h-5 w-5" /> : 
                     <Moon className="h-5 w-5" />
@@ -213,20 +247,24 @@ export default function HomePage() {
               transition={{ duration: 4 }} 
               className="absolute inset-0"
             >
-              <WaterWave
-                imageUrl={currentImage}
-                dropRadius={20}
-                perturbance={0.03}
-                resolution={512}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {() => <HeroContent />}
-              </WaterWave>
+              {isWaterWaveError ? (
+                <BackgroundFallback imageUrl={currentImage} />
+              ) : (
+                <WaterWave
+                  imageUrl={currentImage}
+                  dropRadius={20}
+                  perturbance={0.03}
+                  resolution={512}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  {() => <HeroContent />}
+                </WaterWave>
+              )}
             </motion.div>
           </div>
         </div>
@@ -237,11 +275,11 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Link href="/">
-              <img
-                src="/logo.png"
-                alt="Gifted Homes and Apartments"
-                className="h-full w-auto object-contain"
-              />
+                <img
+                  src="/logo.png"
+                  alt="Gifted Homes and Apartments"
+                  className="h-full w-auto object-contain"
+                />
               </Link>
             </div>
             
