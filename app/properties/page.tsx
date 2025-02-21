@@ -115,11 +115,13 @@ export default function PropertiesPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+            <Link href="/">
               <img
                 src="/logo.png"
                 alt="Gifted Homes and Apartments"
                 className="h-full w-auto object-contain"
               />
+              </Link>
             </div>
             
             <div className="flex space-x-6">

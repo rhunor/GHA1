@@ -60,17 +60,17 @@ const HeroContent = () => (
           Luxury Apartments in Lekki
         </motion.p>
         <Link href="/properties">
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.8 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="rounded-full bg-primary px-6 py-3 md:px-8 md:py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
-        >
-          View Properties
-        </motion.button>
-        </Link>
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="rounded-sm bg-gray-300 px-5 py-2 md:px-6 md:py-3 text-base font-medium text-gray-800 transition-all hover:bg-gray-400 hover:shadow-lg"
+          >
+            View Properties
+          </motion.button>
+          </Link>
       </div>
     </div>
   </div>
@@ -132,6 +132,7 @@ export default function HomePage() {
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
       <nav className="absolute top-0 z-30 w-full">
         <div className="container mx-auto flex items-center justify-between p-0">
+        <Link href="/">
           <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
             <img
               src="/logo.png"
@@ -139,7 +140,7 @@ export default function HomePage() {
               className="h-full w-auto object-contain"
             />
           </div>
-          
+          </Link>
           <div className="flex items-center">
             {/* Mobile Menu Button */}
             <button
@@ -235,11 +236,13 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+              <Link href="/">
               <img
                 src="/logo.png"
                 alt="Gifted Homes and Apartments"
                 className="h-full w-auto object-contain"
               />
+              </Link>
             </div>
             
             <div className="flex space-x-6">
