@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Bed, Bath } from 'lucide-react'
 import { properties } from '@/lib/propertyData'
 import { Facebook, Twitter, Instagram, Linkedin} from 'lucide-react'
+import { BsWhatsapp } from 'react-icons/bs'
+import { MdEmail } from 'react-icons/md'
 
 
 interface Property {
@@ -147,6 +149,20 @@ export default function PropertiesPage() {
               <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Linkedin className="h-6 w-6" />
               </a>
+              <a 
+  href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="text-gray-600 hover:text-primary dark:text-gray-400"
+>
+  <BsWhatsapp className="h-6 w-6" />
+</a>
+            <a 
+              href="mailto:anitaazuike@gmail.com" 
+              className="text-gray-600 hover:text-primary dark:text-gray-400"
+            >
+              <MdEmail className="h-6 w-6" />
+            </a>
             </div>
             
             <div className="text-sm text-center text-gray-600 dark:text-gray-400">
