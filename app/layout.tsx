@@ -1,22 +1,25 @@
+// layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, Marcellus } from "next/font/google";
 import "./globals.css";
-// import Footer from "../components/Footer";
-// import Header from "../components/Header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const marcellus = Marcellus({
+  variable: "--font-marcellus",
+  weight: "400",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Gifted homes and apartments",
   description: "Shortlet apartments in lekki phase 1",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -27,11 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${outfit.variable} ${marcellus.variable} font-outfit antialiased`}
       >
-        {/* <Header darkMode={false} setDarkMode={() => {}} /> */}
         {children}
-        {/* <Footer/> */}
       </body>
     </html>
   );

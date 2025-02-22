@@ -13,6 +13,10 @@ const config: Config = {
       colors: {
         primary: '#2563eb', // You can customize this color
       },
+      fontFamily: {
+        outfit: ['var(--font-outfit)', 'sans-serif'],
+        marcellus: ['var(--font-marcellus)', 'serif'],
+      },
     },
   },
   plugins: [],
