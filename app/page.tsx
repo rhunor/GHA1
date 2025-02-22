@@ -206,7 +206,7 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <NavItem href="#about">About</NavItem> 
+              <NavItem href="/about">About</NavItem> 
               <NavItem href="/properties">Properties</NavItem>
               
               <button
@@ -232,7 +232,7 @@ export default function HomePage() {
               className="md:hidden bg-black/70 backdrop-blur-md"
             >
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-                <NavItem href="#about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
+                <NavItem href="/about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
                 <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
                 
                 <button
