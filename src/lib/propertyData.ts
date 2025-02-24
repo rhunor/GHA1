@@ -21,7 +21,9 @@ export interface Property {
     {
       id: 1,
       title: "2-bedroom Maisonette Lekki 1 (Ezrahaus)",
-      description: `Experience luxury living at its finest in this stunning 2-bedroom apartment located in the prestigious Lekki Phase 1. This meticulously designed home features spacious living areas with high ceilings and natural light throughout. The property offers an perfect blend of comfort and sophistication, making it an ideal choice for those seeking a premium lifestyle in Lagos' most sought-after neighborhood.`,
+      description: `Immerse yourself in a world of refined elegance, where contemporary design meets effortless luxury. This meticulously crafted 2-bedroom maisonette offers a serene escape, combining sophisticated interiors with an ambiance of warmth and comfort. From the thoughtfully designed living spaces to the impeccable attention to detail, every element is curated to provide an unparalleled experience. Whether for business or leisure, this exceptional residence redefines upscale living with timeless style and modern convenience.
+
+Reserve your stay and indulge in the finest luxury.`,
       thumbnail: "/property1/1.jpg",
       price: "₦200,000/night",
       location: "Lekki Phase 1, Lagos",
@@ -38,13 +40,16 @@ export interface Property {
       ],
       features: [
         "Modern kitchen with high-end appliances",
-        "Private swimming pool",
-        "Landscaped garden",
-        "Ocean views from multiple balconies",
+        "Swimming pool",
+        "Fast WiFi",
+        "Surround sound system",
         "Smart home technology throughout",
         "Secure parking for multiple vehicles",
         "24/7 security",
-        "Backup power supply"
+        "Backup power supply",
+        "essentials(toiletries)",
+        "24/7 concierge service",
+        "Clean and treated water"
       ],
       specifications: {
         bedrooms: 2,
@@ -78,12 +83,12 @@ export interface Property {
       features: [
         "Floor-to-ceiling windows",
         "High-end kitchen appliances",
-        "Built-in wardrobes",
-        "Central air conditioning",
+        "Surround sound system",
+        "essentials(toiletries)",
         "24/7 concierge service",
-        "Gymnasium access",
+        "Clean and treated water",
         "Secure parking space",
-        "Rooftop lounge access"
+        "Fast WiFi"
       ],
       specifications: {
         bedrooms: 3,
