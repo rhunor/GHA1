@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@paystack/inline-js": "^2.22.2",
     "framer-motion": "^12.4.4",
     "gsap": "^3.12.7",
     "lucide-react": "^0.475.0",
