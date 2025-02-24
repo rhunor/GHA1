@@ -49,7 +49,7 @@ export interface Property {
       specifications: {
         bedrooms: 2,
         bathrooms: 3,
-        size: "750 sq.m",
+        size: "250 sq.m",
         type: "apartment"
       }
     },
