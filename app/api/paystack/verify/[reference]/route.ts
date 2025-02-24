@@ -1,17 +1,17 @@
-// app/api/paystack/verify/[reference]/route.ts
+// app/api/paystack/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-interface RouteContext {
-  params: {
-    reference: string;
+export async function GET(request: NextRequest) {
+  // Get the reference from the URL query parameters
+  const url = new URL(request.url);
+  const reference = url.searchParams.get('reference');
+  
+  if (!reference) {
+    return NextResponse.json(
+      { error: 'Reference is required' },
+      { status: 400 }
+    );
   }
-}
-
-export async function GET(
-  request: NextRequest,
-  context: RouteContext
-) {
-  const { reference } = context.params;
 
   try {
     const response = await fetch(

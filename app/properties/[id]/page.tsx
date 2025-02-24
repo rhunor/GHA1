@@ -105,7 +105,7 @@ export default function PropertyDetailsPage() {
 
   const verifyTransaction = async (reference: string) => {
     try {
-      const response = await fetch(`/api/paystack/verify/${reference}`);
+      const response = await fetch(`/api/paystack/verify?reference=${reference}`);
       const data = await response.json();
       
       if (data.status && data.data.status === 'success') {
