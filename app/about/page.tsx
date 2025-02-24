@@ -270,7 +270,7 @@ export default function AboutPage() {
               </div>
               <div className="relative h-[600px] rounded-lg overflow-hidden shadow-xl">
                 <img
-                  src="/3.jpg"
+                  src="property1/3.jpg"
                   alt="Luxury Apartment Interior"
                   className="object-cover w-full h-full"
                 />
