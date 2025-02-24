@@ -21,9 +21,9 @@ export interface Property {
     {
       id: 1,
       title: "2-bedroom Maisonette Lekki 1 (Ezrahaus)",
-      description: `Experience luxury living at its finest in this stunning 5-bedroom villa located in the prestigious Lekki Phase 1. This meticulously designed home features spacious living areas with high ceilings and natural light throughout. The property offers an perfect blend of comfort and sophistication, making it an ideal choice for those seeking a premium lifestyle in Lagos' most sought-after neighborhood.`,
+      description: `Experience luxury living at its finest in this stunning 2-bedroom apartment located in the prestigious Lekki Phase 1. This meticulously designed home features spacious living areas with high ceilings and natural light throughout. The property offers an perfect blend of comfort and sophistication, making it an ideal choice for those seeking a premium lifestyle in Lagos' most sought-after neighborhood.`,
       thumbnail: "/property1/1.jpg",
-      price: "$1,200,000",
+      price: "₦200,000/night",
       location: "Lekki Phase 1, Lagos",
       images: [
         "/property1/1.jpg",
@@ -47,18 +47,18 @@ export interface Property {
         "Backup power supply"
       ],
       specifications: {
-        bedrooms: 5,
-        bathrooms: 6,
+        bedrooms: 2,
+        bathrooms: 3,
         size: "750 sq.m",
-        type: "Villa"
+        type: "apartment"
       }
     },
     {
       id: 2,
       title: "3-bedroom terrace in Ikate, Lekki  (Meadowhaus)",
-      description: `Discover contemporary living in this beautifully designed 3-bedroom apartment in the heart of Victoria Island. This sophisticated residence offers stunning city views and features premium finishes throughout. The open-concept layout creates a seamless flow between living spaces, perfect for both entertaining and comfortable daily living.`,
+      description: `Discover contemporary living in this beautifully designed 3-bedroom apartment in the heart of Ikate Lekki. This sophisticated residence offers stunning city views and features premium finishes throughout. The open-concept layout creates a seamless flow between living spaces, perfect for both entertaining and comfortable daily living.`,
       thumbnail: "/property2/7.jpg",
-      price: "$800,000",
+      price: "₦160,000/night",
       location: "Ikate Lekki, Lagos",
       images: [
         "/property2/1.jpg",
