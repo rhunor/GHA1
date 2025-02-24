@@ -1,6 +1,6 @@
 // lib/paystackService.ts
-import { PaystackConfig, PaystackResponse } from '../types/paystack';
-
+import { PaystackConfig } from '../types/paystack';
+//PaystackResponse
 export const generateReference = (): string => {
   const prefix = 'GHA_';
   const uniqueId = Math.floor(Math.random() * 1000000000) + Date.now();
