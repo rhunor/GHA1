@@ -1,10 +1,13 @@
 // app/api/paystack/verify/[reference]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { reference: string } }
-) {
+type Params = {
+  params: {
+    reference: string;
+  };
+};
+
+export async function GET(request: NextRequest, { params }: Params) {
   const reference = params.reference;
 
   try {
