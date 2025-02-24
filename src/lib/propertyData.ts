@@ -22,7 +22,7 @@ export interface Property {
       id: 1,
       title: "2-bedroom Maisonette Lekki 1 (Ezrahaus)",
       description: `Experience luxury living at its finest in this stunning 5-bedroom villa located in the prestigious Lekki Phase 1. This meticulously designed home features spacious living areas with high ceilings and natural light throughout. The property offers an perfect blend of comfort and sophistication, making it an ideal choice for those seeking a premium lifestyle in Lagos' most sought-after neighborhood.`,
-      thumbnail: "/property1/6.jpg",
+      thumbnail: "/property1/1.jpg",
       price: "$1,200,000",
       location: "Lekki Phase 1, Lagos",
       images: [
