@@ -58,19 +58,20 @@ export async function POST(request: NextRequest) {
       { success: true, message: 'Admin user created successfully', user },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating admin user:', error);
     
-    // Handle duplicate email error
-    if (error.code === 11000) {
+    // Handle duplicate email error using type narrowing
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       return NextResponse.json(
         { error: 'Email already in use' },
         { status: 400 }
       );
     }
     
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create admin user';
     return NextResponse.json(
-      { error: error.message || 'Failed to create admin user' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

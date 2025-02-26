@@ -51,10 +51,11 @@ export async function POST(request: NextRequest) {
       { success: true, property },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating property:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create property';
     return NextResponse.json(
-      { error: error.message || 'Failed to create property' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

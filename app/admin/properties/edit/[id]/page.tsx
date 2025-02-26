@@ -175,10 +175,11 @@ export default function EditPropertyPage() {
       // Redirect to properties list on success
       router.push("/admin/properties");
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating property:", error);
-      setError(error.message || "Failed to update property. Please try again.");
-    } finally {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update property. Please try again.";
+      setError(errorMessage);
+    }finally {
       setLoading(false);
     }
   };

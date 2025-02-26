@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, X, Plus, Minus } from "lucide-react";
+import { ArrowLeft, X, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function NewPropertyPage() {
@@ -124,9 +124,10 @@ const handleInputChange = (
       // Redirect to properties list on success
       router.push("/admin/properties");
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating property:", error);
-      setError(error.message || "Failed to create property. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create property. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -159,7 +160,6 @@ const handleInputChange = (
             {error}
           </div>
         )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

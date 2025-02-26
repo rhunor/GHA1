@@ -1,9 +1,24 @@
 // app/api/bookings/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
+// Define a proper type for bookings
+interface Booking {
+  id: string;
+  propertyId: string;
+  reference: string;
+  name: string;
+  email: string;
+  phone: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  paymentStatus: string;
+  createdAt: string;
+}
+
 // In a real application, you would connect to a database here
 // This is a placeholder for demonstration purposes
-const bookings: any[] = [];
+const bookings: Booking[] = [];
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +49,7 @@ export async function POST(request: NextRequest) {
     // });
     
     // For demonstration, we'll just add to our in-memory array
-    const booking = {
+    const booking: Booking = {
       id: Date.now().toString(),
       ...data,
       createdAt: new Date().toISOString()

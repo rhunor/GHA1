@@ -17,7 +17,8 @@ export async function seedDatabase() {
       
       // Convert static properties to MongoDB schema format
       const propertiesToInsert = staticProperties.map(property => {
-        const { id, ...propertyData } = property;
+        // Use _ for unused variables or remove destructuring if not used
+        const { id: _, ...propertyData } = property;
         return propertyData;
       });
       
