@@ -1,10 +1,41 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
+// import { JWT } from "next-auth/jwt";
 
-const authOptions = {
+// Extend the built-in session types
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    user: {
+      id: string;
+      role: string;
+      isAdmin: boolean;
+      // Include other properties from the default session user
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+  
+  // Make both role and isAdmin required in User to match the Session definition
+  interface User {
+    role: string;
+    isAdmin: boolean;
+  }
+}
+
+// Extend the built-in JWT types
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role: string;
+    isAdmin: boolean;
+  }
+}
+
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -50,7 +81,7 @@ const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: any, user?: any }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -58,12 +89,10 @@ const authOptions = {
       }
       return token;
     },
-    async session({ session, token }: { session: any, token: any }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.isAdmin = token.isAdmin;
-      }
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.isAdmin = token.isAdmin;
       return session;
     },
   },
@@ -71,7 +100,7 @@ const authOptions = {
     signIn: "/admin/login",
   },
   session: {
-    strategy: "jwt" as const,
+    strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

@@ -130,10 +130,11 @@ export async function PUT(
    }
    
    return NextResponse.json({ success: true, property });
- } catch (error: any) {
+ } catch (error) {  // Removed ": any" type annotation
    console.error('Error updating property:', error);
+   const errorMessage = error instanceof Error ? error.message : 'Failed to update property';
    return NextResponse.json(
-     { error: error.message || 'Failed to update property' },
+     { error: errorMessage },
      { status: 500 }
    );
  }

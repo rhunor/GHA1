@@ -17,8 +17,8 @@ export async function seedDatabase() {
       
       // Convert static properties to MongoDB schema format
       const propertiesToInsert = staticProperties.map(property => {
-        // Use _ for unused variables or remove destructuring if not used
-        const { id: _, ...propertyData } = property;
+        // Use object rest to exclude the id property
+        const { id, ...propertyData } = property;
         return propertyData;
       });
       
@@ -55,6 +55,3 @@ export async function seedDatabase() {
     console.error('Error seeding database:', error);
   }
 }
-
-// Uncomment the line below to run the seed script directly 
-// seedDatabase();

@@ -7,6 +7,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
+import Image from 'next/image'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -122,7 +123,9 @@ export default function AboutPage() {
         <div className="container mx-auto flex items-center justify-between p-4">
           <Link href="/">
             <div className="h-20 w-auto md:h-24 lg:h-28 shrink-0">
-              <img
+              <Image
+              width={200}
+              height={200}
                 src="/logo.png"
                 alt="Gifted Homes and Apartments"
                 className="h-full w-auto object-contain"
@@ -269,7 +272,9 @@ export default function AboutPage() {
                 </motion.p>
               </div>
               <div className="relative h-[600px] rounded-lg overflow-hidden shadow-xl">
-                <img
+                <Image
+                width={600}
+                height={600}
                   src="property1/3.jpg"
                   alt="Luxury Apartment Interior"
                   className="object-cover w-full h-full"
@@ -286,7 +291,9 @@ export default function AboutPage() {
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-28 shrink-0">
               <Link href="/">
-                <img
+                <Image
+                width={200}
+                height={200}
                   src="/logo.png"
                   alt="Gifted Homes and Apartments"
                   className="h-full w-auto object-contain"

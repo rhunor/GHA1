@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
+import Image from 'next/image'
 
 interface BackgroundImageProps {
   currentImage: string;
@@ -186,7 +187,9 @@ export default function HomePage() {
         <div className="container mx-auto flex items-center justify-between p-0">
           <Link href="/">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <img
+              <Image
+              width={200}
+              height={200}
                 src="/logo.png"
                 alt="Gifted Homes and Apartments"
                 className="h-full w-auto object-contain"
@@ -274,7 +277,9 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Link href="/">
-                <img
+                <Image
+                width={200}
+                height={200}
                   src="/logo.png"
                   alt="Gifted Homes and Apartments"
                   className="h-full w-auto object-contain"

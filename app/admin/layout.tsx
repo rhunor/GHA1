@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Building, Home, LogOut, Menu, PlusCircle } from "lucide-react";
+import Image from "next/image";
 
 export default function AdminLayout({
   children,
@@ -61,7 +62,9 @@ export default function AdminLayout({
           <div className="p-6 h-full flex flex-col">
             <Link href="/">
               <div className="h-16 w-auto shrink-0 mb-8">
-                <img
+                <Image
+                  width={200}
+                  height={50}
                   src="/logo.png"
                   alt="Gifted Homes and Apartments"
                   className="h-full w-auto object-contain"

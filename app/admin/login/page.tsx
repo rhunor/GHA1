@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -34,7 +35,7 @@ export default function AdminLoginPage() {
       // Redirect to admin dashboard on success
       router.push("/admin/dashboard");
       router.refresh();
-    } catch (error) {
+    } catch (err) {  // Changed from 'error' to 'err'
       setError("An unexpected error occurred");
       setLoading(false);
     }
@@ -44,7 +45,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Link href="/">
         <div className="mb-8 h-20 w-auto md:h-24 lg:h-28 shrink-0">
-          <img
+          <Image
+            width={200}
+            height={50}
             src="/logo.png"
             alt="Gifted Homes and Apartments"
             className="h-full w-auto object-contain"

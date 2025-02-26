@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Eye, Pencil, Trash, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Property {
   _id: string;
@@ -170,7 +171,9 @@ export default function AdminPropertiesPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded overflow-hidden">
-                          <img
+                          <Image
+                          width={40}
+                          height={40}
                             src={property.thumbnail}
                             alt={property.title}
                             className="h-10 w-10 object-cover"

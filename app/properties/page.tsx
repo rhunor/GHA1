@@ -6,6 +6,7 @@ import { Bed, Bath } from 'lucide-react'
 import { Facebook, Twitter, Instagram, Linkedin} from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
+import Image from 'next/image'
 
 interface Property {
   _id?: string;
@@ -30,7 +31,9 @@ const PropertyCard = ({ property }: { property: Property }) => (
     className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 dark:bg-gray-800"
   >
     <div className="relative h-64 overflow-hidden">
-      <img
+      <Image
+      width={200}
+      height={200}
         src={property.thumbnail}
         alt={property.title}
         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
@@ -130,7 +133,9 @@ export default function PropertiesPage() {
       <div className="relative bg-primary text-white pt-0 md:pt-0 lg:pt-0 pb-16">
       <Link href="/">
         <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-          <img
+          <Image
+          width={200}
+          height={200}
             src="/logo.png"
             alt="Gifted Homes and Apartments"
             className="h-full w-auto object-contain"
@@ -182,7 +187,9 @@ export default function PropertiesPage() {
         <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
           <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
           <Link href="/">
-            <img
+            <Image
+            width={200}
+            height={200}
               src="/logo.png"
               alt="Gifted Homes and Apartments"
               className="h-full w-auto object-contain"

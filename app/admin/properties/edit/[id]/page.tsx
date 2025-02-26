@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Upload, X, Plus, Minus } from "lucide-react";
+import { ArrowLeft, X, Plus } from "lucide-react";
 import Link from "next/link";
 
 interface PropertyData {

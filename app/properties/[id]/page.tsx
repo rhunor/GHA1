@@ -9,6 +9,7 @@ import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
 import { generateReference, extractPrice, calculateTotalAmount, initializePaystack } from '@/lib/paystackService'
+import Image from 'next/image'
 
 interface PropertyData {
   _id?: string;          // MongoDB ID (optional)
@@ -36,6 +37,11 @@ interface BookingFormData {
   checkOut: string
   guests: number
 }
+interface PaystackResponse {
+  reference: string;
+  // Add other properties if needed (e.g., status, message)
+}
+// Removed the custom PaystackResponse interface to avoid conflicts
 
 export default function PropertyDetailsPage() {
   const params = useParams()
@@ -198,9 +204,8 @@ export default function PropertyDetailsPage() {
           setIsLoading(false);
           console.log('Payment window closed');
         },
-        callback: async function(response: any) {
+        callback: async function(response: PaystackResponse) {
           console.log('Payment complete! Reference: ' + response.reference);
-          
           const isVerified = await verifyTransaction(response.reference);
           
           if (isVerified) {
@@ -261,7 +266,9 @@ export default function PropertyDetailsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-0 md:pt-0 lg:pt-0">
       <Link href="/">
         <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-          <img
+          <Image
+          width={200}
+          height={200}
             src="/logo.png"
             alt="Gifted Homes and Apartments"
             className="h-full w-auto object-contain"
@@ -640,7 +647,9 @@ export default function PropertyDetailsPage() {
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Link href="/">
-                <img
+                <Image
+                width={200}
+                height={200}
                   src="/logo.png"
                   alt="Gifted Homes and Apartments"
                   className="h-full w-auto object-contain"
