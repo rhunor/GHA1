@@ -35,7 +35,8 @@ export default function AdminLoginPage() {
       // Redirect to admin dashboard on success
       router.push("/admin/dashboard");
       router.refresh();
-    } catch (_) {  // Use underscore to explicitly mark as unused
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
       setError("An unexpected error occurred");
       setLoading(false);
     }
