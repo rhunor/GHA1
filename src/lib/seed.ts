@@ -18,6 +18,7 @@ export async function seedDatabase() {
       // Convert static properties to MongoDB schema format
       const propertiesToInsert = staticProperties.map(property => {
         // Use object rest to exclude the id property
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...propertyData } = property;
         return propertyData;
       });

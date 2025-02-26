@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
       // Redirect to admin dashboard on success
       router.push("/admin/dashboard");
       router.refresh();
-    } catch (err) {  // Changed from 'error' to 'err'
+    } catch (_) {  // Use underscore to explicitly mark as unused
       setError("An unexpected error occurred");
       setLoading(false);
     }
