@@ -1,15 +1,32 @@
+// app/properties/[id]/page.tsx
 "use client"
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard } from 'lucide-react'
-import { properties, Property } from '@/lib/propertyData'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
 import { generateReference, extractPrice, calculateTotalAmount, initializePaystack } from '@/lib/paystackService'
-import { PaystackConfig, PaystackResponse } from '@/types/paystack'
+
+interface PropertyData {
+  _id?: string;          // MongoDB ID (optional)
+  id?: number;           // Your original numeric ID (optional)
+  title: string;
+  description: string;
+  thumbnail: string;
+  price: string;
+  location: string;
+  images: string[];
+  features: string[];
+  specifications: {
+    bedrooms: number;
+    bathrooms: number;
+    size: string;
+    type: string;
+  };
+}
 
 interface BookingFormData {
   name: string
@@ -24,11 +41,12 @@ export default function PropertyDetailsPage() {
   const params = useParams()
   const router = useRouter()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [property, setProperty] = useState<Property | null>(null)
+  const [property, setProperty] = useState<PropertyData | null>(null)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const [activeOption, setActiveOption] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [fetchLoading, setFetchLoading] = useState(true)
   const [paymentSuccess, setPaymentSuccess] = useState<{ reference: string } | null>(null)
   const [formData, setFormData] = useState<BookingFormData>({
     name: '',
@@ -40,16 +58,41 @@ export default function PropertyDetailsPage() {
   })
 
   useEffect(() => {
-    const propertyId = Number(params.id)
-    const foundProperty = properties.find(p => p.id === propertyId)
+    const fetchProperty = async () => {
+      try {
+        const response = await fetch(`/api/properties/${params.id}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.property) {
+            setProperty(data.property);
+            setFetchLoading(false);
+            return;
+          }
+        }
+        
+        console.log('API not returning property, trying static data...');
+        const { properties: staticProperties } = await import('@/lib/propertyData') as { properties: PropertyData[] }; // Explicitly type the import
+        
+        const propertyId = Number.isNaN(Number(params.id)) ? params.id : Number(params.id);
+        const staticProperty = staticProperties.find(p => 
+          p.id === propertyId || p._id === params.id
+        );
+        
+        if (staticProperty) {
+          setProperty(staticProperty);
+          setFetchLoading(false);
+        } else {
+          throw new Error('Property not found');
+        }
+      } catch (error) {
+        console.error('Error fetching property:', error);
+        router.push('/properties');
+      }
+    };
     
-    if (!foundProperty) {
-      router.push('/properties')
-      return
-    }
-    
-    setProperty(foundProperty)
-  }, [params.id, router])
+    fetchProperty();
+  }, [params.id, router]);
 
   useEffect(() => {
     if (!property || !isAutoPlaying) return
@@ -58,13 +101,12 @@ export default function PropertyDetailsPage() {
       setCurrentImageIndex((prev) => 
         prev === property.images.length - 1 ? 0 : prev + 1
       )
-    }, 5000) // Change slide every 5 seconds
+    }, 5000)
 
     return () => clearInterval(timer)
   }, [property, isAutoPlaying])
 
   useEffect(() => {
-    // Add Paystack script dynamically
     const script = document.createElement('script')
     script.src = 'https://js.paystack.co/v1/inline.js'
     script.async = true
@@ -77,19 +119,27 @@ export default function PropertyDetailsPage() {
     }
   }, [])
 
+  if (fetchLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (!property) {
-    return <div>Loading...</div>
+    return null;
   }
 
   const nextImage = () => {
-    setIsAutoPlaying(false) // Pause auto-play when manually navigating
+    setIsAutoPlaying(false)
     setCurrentImageIndex((prev) => 
       prev === property.images.length - 1 ? 0 : prev + 1
     )
   }
 
   const prevImage = () => {
-    setIsAutoPlaying(false) // Pause auto-play when manually navigating
+    setIsAutoPlaying(false)
     setCurrentImageIndex((prev) => 
       prev === 0 ? property.images.length - 1 : prev - 1
     )
@@ -124,77 +174,55 @@ export default function PropertyDetailsPage() {
     setIsLoading(true);
     
     try {
-      // Create unique reference for this transaction
       const reference = generateReference();
-      
-      // Calculate price from string (e.g. "₦200,000/night")
       const price = extractPrice(property.price);
+      const totalAmount = calculateTotalAmount(price, formData.checkIn, formData.checkOut);
       
-      // Calculate total amount based on nights
-      const totalAmount = calculateTotalAmount(
-        price,
-        formData.checkIn,
-        formData.checkOut
-      );
-      
-      // Initialize Paystack checkout
-      const paystackConfig: PaystackConfig = {
+      const paystackConfig = {
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
         email: formData.email,
-        amount: totalAmount * 100, // Paystack amount is in kobo (multiply by 100)
+        amount: totalAmount * 100,
         currency: 'NGN',
         ref: reference,
         metadata: {
           custom_fields: [
-            {
-              display_name: "Guest Name",
-              variable_name: "guest_name",
-              value: formData.name
-            },
-            {
-              display_name: "Check In",
-              variable_name: "check_in",
-              value: formData.checkIn
-            },
-            {
-              display_name: "Check Out",
-              variable_name: "check_out",
-              value: formData.checkOut
-            },
-            {
-              display_name: "Number of Guests",
-              variable_name: "guests",
-              value: formData.guests.toString()
-            },
-            {
-              display_name: "Phone Number",
-              variable_name: "phone",
-              value: formData.phone
-            },
-            {
-              display_name: "Property",
-              variable_name: "property",
-              value: property.title
-            }
+            { display_name: "Guest Name", variable_name: "guest_name", value: formData.name },
+            { display_name: "Check In", variable_name: "check_in", value: formData.checkIn },
+            { display_name: "Check Out", variable_name: "check_out", value: formData.checkOut },
+            { display_name: "Number of Guests", variable_name: "guests", value: formData.guests.toString() },
+            { display_name: "Phone Number", variable_name: "phone", value: formData.phone },
+            { display_name: "Property", variable_name: "property", value: property.title }
           ]
         },
         onClose: function() {
           setIsLoading(false);
           console.log('Payment window closed');
         },
-        callback: async function(response: PaystackResponse) {
+        callback: async function(response: any) {
           console.log('Payment complete! Reference: ' + response.reference);
           
-          // Verify the transaction
           const isVerified = await verifyTransaction(response.reference);
           
           if (isVerified) {
             setPaymentSuccess({ reference: response.reference });
             
-            // Here you would typically save the booking to your database
-            // This would require a separate API endpoint
+            try {
+              await fetch('/api/bookings', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  propertyId: property._id || property.id,
+                  reference: response.reference,
+                  ...formData,
+                  paymentStatus: 'completed',
+                }),
+              });
+            } catch (error) {
+              console.error('Error saving booking:', error);
+            }
             
-            // Reset form
             setFormData({
               name: '',
               email: '',
@@ -221,13 +249,12 @@ export default function PropertyDetailsPage() {
   };
 
   const openWhatsApp = () => {
-    const message = `Good day, I would like to book ${property.title} (${property.price}). Please provide more information.`
-    window.open(`https://wa.me/+2347036560630?text=${encodeURIComponent(message)}`, '_blank')
+    const message = `Good day, I would like to book ${property.title} (${property.price}). Please provide more information.`;
+    window.open(`https://wa.me/+2347036560630?text=${encodeURIComponent(message)}`, '_blank');
   }
 
   const openAirbnb = () => {
-    // Replace with your actual Airbnb listing URL
-    window.open('https://www.airbnb.com/your-listing-url', '_blank')
+    window.open('https://www.airbnb.com/your-listing-url', '_blank');
   }
 
   return (
@@ -242,7 +269,6 @@ export default function PropertyDetailsPage() {
         </div>
       </Link>
       
-      {/* Back Button */}
       <Link 
         href="/properties"
         className="fixed top-20 left-4 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
@@ -250,7 +276,6 @@ export default function PropertyDetailsPage() {
         <ArrowLeft className="h-6 w-6" />
       </Link>
 
-      {/* Image Slideshow */}
       <div className="relative h-[50vh] md:h-[70vh] bg-black">
         <AnimatePresence mode="wait">
           <motion.img
@@ -265,7 +290,6 @@ export default function PropertyDetailsPage() {
           />
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
         <button
           onClick={prevImage}
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
@@ -279,13 +303,11 @@ export default function PropertyDetailsPage() {
           <ChevronRight className="h-6 w-6" />
         </button>
 
-        {/* Image Counter */}
         <div className="absolute bottom-4 right-4 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
           {currentImageIndex + 1} / {property.images.length}
         </div>
       </div>
 
-      {/* Property Details */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -302,7 +324,6 @@ export default function PropertyDetailsPage() {
               {property.location}
             </p>
 
-            {/* Specifications */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
               <div className="flex items-center gap-2">
                 <Bed className="h-5 w-5 text-primary" />
@@ -329,7 +350,6 @@ export default function PropertyDetailsPage() {
               </div>
             </div>
 
-            {/* Description */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
                 Description
@@ -339,7 +359,6 @@ export default function PropertyDetailsPage() {
               </p>
             </div>
 
-            {/* Features */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
                 Features
@@ -369,7 +388,6 @@ export default function PropertyDetailsPage() {
         </div>
       </div>
 
-      {/* Booking Modal */}
       <AnimatePresence>
         {isBookingModalOpen && (
           <motion.div
@@ -535,136 +553,136 @@ export default function PropertyDetailsPage() {
                           required
                           min={formData.checkIn || new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                          />
-                        </div>
-                      </div>
-  
-                      <div className="mt-8 flex justify-end space-x-4">
-                        <button
-                          type="button"
-                          onClick={() => setActiveOption(null)}
-                          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                        >
-                          Back
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={isLoading}
-                          className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                        >
-                          {isLoading ? (
-                            <>
-                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Processing...
-                            </>
-                          ) : (
-                            'Proceed to Payment'
-                          )}
-                        </button>
-                      </div>
-                    </form>
-                  ) : activeOption === 'whatsapp' ? (
-                    <div className="text-center py-8">
-                      <BsWhatsapp className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via WhatsApp</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-6">
-                        Our team is ready to assist you with your booking for {property.title}.
-                      </p>
-                      <div className="flex justify-center space-x-4">
-                        <button
-                          onClick={() => setActiveOption(null)}
-                          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                        >
-                          Back
-                        </button>
-                        <button
-                          onClick={openWhatsApp}
-                          className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                        >
-                          Chat on WhatsApp
-                        </button>
+                        />
                       </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Home className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via Airbnb</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-6">
-                        Continue your booking on the Airbnb platform.
-                      </p>
-                      <div className="flex justify-center space-x-4">
-                        <button
-                          onClick={() => setActiveOption(null)}
-                          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                        >
-                          Back
-                        </button>
-                        <button
-                          onClick={openAirbnb}
-                          className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                        >
-                          Continue to Airbnb
-                        </button>
-                      </div>
+
+                    <div className="mt-8 flex justify-end space-x-4">
+                      <button
+                        type="button"
+                        onClick={() => setActiveOption(null)}
+                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      >
+                        {isLoading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          'Proceed to Payment'
+                        )}
+                      </button>
                     </div>
-                  )}
-                </div>
-              </motion.div>
+                  </form>
+                ) : activeOption === 'whatsapp' ? (
+                  <div className="text-center py-8">
+                    <BsWhatsapp className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via WhatsApp</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                      Our team is ready to assist you with your booking for {property.title}.
+                    </p>
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => setActiveOption(null)}
+                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={openWhatsApp}
+                        className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                      >
+                        Chat on WhatsApp
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Home className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via Airbnb</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                      Continue your booking on the Airbnb platform.
+                    </p>
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => setActiveOption(null)}
+                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={openAirbnb}
+                        className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      >
+                        Continue to Airbnb
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-  
-        <footer className="bg-white py-12 dark:bg-gray-900">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-              <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-                <Link href="/">
-                  <img
-                    src="/logo.png"
-                    alt="Gifted Homes and Apartments"
-                    className="h-full w-auto object-contain"
-                  />
-                </Link>
-              </div>
-              
-              <div className="flex space-x-6">
-                <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                  <Facebook className="h-6 w-6" />
-                </a>
-                <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                  <Twitter className="h-6 w-6" />
-                </a>
-                <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                  <Instagram className="h-6 w-6" />
-                </a>
-                <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                  <Linkedin className="h-6 w-6" />
-                </a>
-                <a 
-                  href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-gray-600 hover:text-primary dark:text-gray-400"
-                >
-                  <BsWhatsapp className="h-6 w-6" />
-                </a>
-                <a 
-                  href="mailto:anitaazuike@gmail.com" 
-                  className="text-gray-600 hover:text-primary dark:text-gray-400"
-                >
-                  <MdEmail className="h-6 w-6" />
-                </a>
-              </div>
-              
-              <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-                © 2025 Gifted Homes and Apartments. All rights reserved.
-              </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <footer className="bg-white py-12 dark:bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
+            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+              <Link href="/">
+                <img
+                  src="/logo.png"
+                  alt="Gifted Homes and Apartments"
+                  className="h-full w-auto object-contain"
+                />
+              </Link>
+            </div>
+            
+            <div className="flex space-x-6">
+              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Twitter className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Instagram className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Linkedin className="h-6 w-6" />
+              </a>
+              <a 
+                href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <BsWhatsapp className="h-6 w-6" />
+              </a>
+              <a 
+                href="mailto:anitaazuike@gmail.com" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <MdEmail className="h-6 w-6" />
+              </a>
+            </div>
+            
+            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+              © 2025 Gifted Homes and Apartments. All rights reserved.
             </div>
           </div>
-        </footer>
-      </div>
-    )
-  }
+        </div>
+      </footer>
+    </div>
+  )
+}

@@ -1,7 +1,8 @@
-// layout.tsx
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Outfit, Marcellus } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "@/providers/AuthProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${marcellus.variable} font-outfit antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
