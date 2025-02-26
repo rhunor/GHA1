@@ -14,10 +14,9 @@ const isValidObjectId = (id: string) => {
 // GET a single property by ID
 export async function GET(
  request: NextRequest,
- context: { params: { id: string } }
+ { params }: { params: { id: string } }
 ) {
- // Use the params from context correctly
- const { id } = await context.params;
+ const { id } = params;
 
  try {
    // Check if it's a numeric ID (from static data)
@@ -81,10 +80,9 @@ export async function GET(
 // PUT - update a property
 export async function PUT(
  request: NextRequest,
- context: { params: { id: string } }
+ { params }: { params: { id: string } }
 ) {
- // Use the params from context correctly
- const { id } = await context.params;
+ const { id } = params;
 
  try {
    // Check authentication (optional, already checked in AdminLayout)
@@ -130,7 +128,7 @@ export async function PUT(
    }
    
    return NextResponse.json({ success: true, property });
- } catch (error) {  // Removed ": any" type annotation
+ } catch (error) {
    console.error('Error updating property:', error);
    const errorMessage = error instanceof Error ? error.message : 'Failed to update property';
    return NextResponse.json(
@@ -143,10 +141,9 @@ export async function PUT(
 // DELETE a property
 export async function DELETE(
  request: NextRequest,
- context: { params: { id: string } }
+ { params }: { params: { id: string } }
 ) {
- // Use the params from context correctly
- const { id } = await context.params;
+ const { id } = params;
 
  try {
    // Check authentication (optional, already checked in AdminLayout)
