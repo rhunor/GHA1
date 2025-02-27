@@ -22,6 +22,7 @@ interface PropertyData {
   location: string;
   images: string[];
   features: string[];
+  airbnbLink?: string
   specifications: {
     bedrooms: number;
     bathrooms: number;
@@ -73,6 +74,7 @@ export default function PropertyDetailsPage() {
           const data = await response.json();
           if (data.property) {
             setProperty(data.property);
+            console.log("Property data:", data.property); 
             setFetchLoading(false);
             return;
           }
@@ -259,8 +261,15 @@ export default function PropertyDetailsPage() {
     window.open(`https://wa.link/inwgi0?text=${encodeURIComponent(message)}`, '_blank');
   }
 
+  // Update the openAirbnb function in PropertyDetailsPage
   const openAirbnb = () => {
-    window.open('https://www.airbnb.com/rooms/1312815567252380971?viralityEntryPoint=1&s=76', '_blank');
+    console.log("Property object:", property);
+    console.log("Airbnb link:", property.airbnbLink);
+    
+    const airbnbUrl = property.airbnbLink || "https://www.airbnb.com";
+    console.log("URL to open:", airbnbUrl);
+    
+    window.open(airbnbUrl, '_blank');
   }
 
   return (

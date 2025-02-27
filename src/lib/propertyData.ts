@@ -9,6 +9,7 @@ export interface Property {
     location: string
     images: string[]
     features: string[]
+    airbnbLink?: string 
     specifications: {
       bedrooms: number
       bathrooms: number
@@ -51,6 +52,7 @@ Reserve your stay and indulge in the finest luxury.`,
         "24/7 concierge service",
         "Clean and treated water"
       ],
+      airbnbLink: "https://www.airbnb.com/rooms/1312815567252380971?viralityEntryPoint=1&s=76",
       specifications: {
         bedrooms: 2,
         bathrooms: 3,
@@ -90,6 +92,7 @@ Reserve your stay and indulge in the finest luxury.`,
         "Secure parking space",
         "Fast WiFi"
       ],
+      airbnbLink: "https://www.airbnb.com/rooms/1274410638357679006?viralityEntryPoint=1&s=76",
       specifications: {
         bedrooms: 3,
         bathrooms: 3.5,

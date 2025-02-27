@@ -8,6 +8,7 @@ export interface IProperty {
   location: string;
   images: string[];
   features: string[];
+  airbnbLink?: string
   specifications: {
     bedrooms: number;
     bathrooms: number;
@@ -37,6 +38,10 @@ const propertySchema = new Schema<IProperty>(
     location: {
       type: String,
       required: true,
+    },
+    airbnbLink: {
+      type: String,
+      required: false, // Make it optional
     },
     images: {
       type: [String],

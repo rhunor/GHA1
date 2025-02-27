@@ -1,3 +1,4 @@
+//app/admin/properties/new/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -18,6 +19,7 @@ export default function NewPropertyPage() {
     thumbnail: "",
     price: "",
     location: "",
+    airbnbLink: "",
     specifications: {
       bedrooms: 1,
       bathrooms: 1,
@@ -205,6 +207,19 @@ const handleInputChange = (
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
               />
             </div>
+            <div>
+  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+    Airbnb Link
+  </label>
+  <input
+    type="url"
+    name="airbnbLink"
+    value={formData.airbnbLink}
+    onChange={handleInputChange}
+    placeholder="https://www.airbnb.com/rooms/123456789"
+    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+  />
+</div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

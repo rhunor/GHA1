@@ -66,6 +66,10 @@ const propertySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    airbnbLink: {
+      type: String,
+      required: false, // Make it optional
+    },
     images: {
       type: [String],
       required: true,
@@ -183,6 +187,13 @@ Reserve your stay and indulge in the finest luxury.`,
       "24/7 concierge service",
       "Clean and treated water"
     ],
+    airbnbLink: "https://www.airbnb.com/rooms/1312815567252380971?viralityEntryPoint=1&s=76",
+    specifications: {
+      bedrooms: 2,
+      bathrooms: 3,
+      size: "250 sq.m",
+      type: "apartment"
+    },
     specifications: {
       bedrooms: 2,
       bathrooms: 3,
@@ -222,6 +233,13 @@ Reserve your stay and indulge in the finest luxury.`,
       "Secure parking space",
       "Fast WiFi"
     ],
+    specifications: {
+      bedrooms: 3,
+      bathrooms: 3.5,
+      size: "280 sq.m",
+      type: "Apartment"
+    },
+    airbnbLink: "https://www.airbnb.com/rooms/1274410638357679006?viralityEntryPoint=1&s=76",
     specifications: {
       bedrooms: 3,
       bathrooms: 3.5,
