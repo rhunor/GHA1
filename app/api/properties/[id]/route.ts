@@ -14,9 +14,9 @@ const isValidObjectId = (id: string) => {
 // GET a single property by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } } // Explicitly typed to match Next.js expectation
-): Promise<NextResponse> {
-  const { id } = params;
+  { params }: { params: Promise<{ id: string }> }
+) {
+   const id = (await params).id; 
 
   try {
     // Check if it's a numeric ID (from static data)
@@ -79,9 +79,9 @@ export async function GET(
 // PUT - update a property
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } } // Consistent typing
-): Promise<NextResponse> {
-  const { id } = params;
+  { params }: { params: Promise<{ id: string }> }
+) {
+   const id = (await params).id; 
 
   try {
     // Check authentication (optional, already checked in AdminLayout)
@@ -140,9 +140,9 @@ export async function PUT(
 // DELETE a property
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } } // Consistent typing
-): Promise<NextResponse> {
-  const { id } = params;
+  { params }: { params: Promise<{ id: string }> }
+) {
+   const id = (await params).id; 
 
   try {
     // Check authentication (optional, already checked in AdminLayout)
