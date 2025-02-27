@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { Sun, Moon, Facebook, Twitter, Instagram, Linkedin, Menu, X, Home, Clock, Wifi, Zap, Wind, Droplets, UtensilsCrossed, Sparkles } from 'lucide-react'
+import { Sun, Moon, Instagram, Menu, X, Home, Clock, Wifi, Zap, Wind, Droplets, UtensilsCrossed, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import gsap from 'gsap'
