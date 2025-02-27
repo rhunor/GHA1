@@ -184,55 +184,55 @@ export default function PropertiesPage() {
         )}
       </div>
       <footer className="bg-white py-12 dark:bg-gray-900">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-          <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-          <Link href="/">
-            <Image
-            width={200}
-            height={200}
-              src="/logo.png"
-              alt="Gifted Homes and Apartments"
-              className="h-full w-auto object-contain"
-            />
-            </Link>
-          </div>
-          
-          <div className="flex space-x-6">
-            <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-              <Facebook className="h-6 w-6" />
-            </a>
-            <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-              <Twitter className="h-6 w-6" />
-            </a>
-            <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-              <Instagram className="h-6 w-6" />
-            </a>
-            <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-              <Linkedin className="h-6 w-6" />
-            </a>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
+            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
+              <Link href="/">
+                <Image
+                width={200}
+                height={200}
+                  src="/logo.png"
+                  alt="Gifted Homes and Apartments"
+                  className="h-full w-auto object-contain"
+                />
+              </Link>
+            </div>
+            
+            <div className="flex space-x-6">
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Twitter className="h-6 w-6" />
+              </a> */}
+              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Instagram className="h-6 w-6" />
+              </a>
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <Linkedin className="h-6 w-6" />
+              </a> */}
+              <a 
+  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="text-gray-600 hover:text-primary dark:text-gray-400"
+>
+  <BsWhatsapp className="h-6 w-6" />
+</a>
             <a 
-              href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-              target="_blank" 
-              rel="noopener noreferrer" 
+              href="mailto:Horizon2haus@gmail.com" 
               className="text-gray-600 hover:text-primary dark:text-gray-400"
             >
-              <BsWhatsapp className="h-6 w-6" />
+              <MdEmail className="h-6 w-6" />
             </a>
-          <a 
-            href="mailto:anitaazuike@gmail.com" 
-            className="text-gray-600 hover:text-primary dark:text-gray-400"
-          >
-            <MdEmail className="h-6 w-6" />
-          </a>
-          </div>
-          
-          <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-            © 2025 Gifted Homes and Apartments. All rights reserved.
+            </div>
+            
+            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+              © 2025 Gifted Homes and Apartments. All rights reserved.
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
     </div>
   )
 }

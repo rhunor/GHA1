@@ -255,11 +255,11 @@ export default function PropertyDetailsPage() {
 
   const openWhatsApp = () => {
     const message = `Good day, I would like to book ${property.title} (${property.price}). Please provide more information.`;
-    window.open(`https://wa.me/+2347036560630?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.link/inwgi0?text=${encodeURIComponent(message)}`, '_blank');
   }
 
   const openAirbnb = () => {
-    window.open('https://www.airbnb.com/your-listing-url', '_blank');
+    window.open('https://www.airbnb.com/rooms/1312815567252380971?viralityEntryPoint=1&s=76', '_blank');
   }
 
   return (
@@ -658,32 +658,32 @@ export default function PropertyDetailsPage() {
             </div>
             
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Facebook className="h-6 w-6" />
               </a>
               <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Twitter className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              </a> */}
+              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Instagram className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Linkedin className="h-6 w-6" />
-              </a>
+              </a> */}
               <a 
-                href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <BsWhatsapp className="h-6 w-6" />
-              </a>
-              <a 
-                href="mailto:anitaazuike@gmail.com" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <MdEmail className="h-6 w-6" />
-              </a>
+  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="text-gray-600 hover:text-primary dark:text-gray-400"
+>
+  <BsWhatsapp className="h-6 w-6" />
+</a>
+            <a 
+              href="mailto:Horizon2haus@gmail.com" 
+              className="text-gray-600 hover:text-primary dark:text-gray-400"
+            >
+              <MdEmail className="h-6 w-6" />
+            </a>
             </div>
             
             <div className="text-sm text-center text-gray-600 dark:text-gray-400">

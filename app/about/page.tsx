@@ -289,7 +289,7 @@ export default function AboutPage() {
       <footer className="bg-white py-12 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="h-20 w-auto md:h-24 lg:h-28 shrink-0">
+            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Link href="/">
                 <Image
                 width={200}
@@ -302,20 +302,20 @@ export default function AboutPage() {
             </div>
             
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Facebook className="h-6 w-6" />
               </a>
               <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Twitter className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              </a> */}
+              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Instagram className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
+              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Linkedin className="h-6 w-6" />
-              </a>
+              </a> */}
               <a 
-  href="https://wa.me/+2347036560630?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
   target="_blank" 
   rel="noopener noreferrer" 
   className="text-gray-600 hover:text-primary dark:text-gray-400"
@@ -323,7 +323,7 @@ export default function AboutPage() {
   <BsWhatsapp className="h-6 w-6" />
 </a>
             <a 
-              href="mailto:anitaazuike@gmail.com" 
+              href="mailto:Horizon2haus@gmail.com" 
               className="text-gray-600 hover:text-primary dark:text-gray-400"
             >
               <MdEmail className="h-6 w-6" />
