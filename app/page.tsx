@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
+import { AiFillTikTok } from "react-icons/ai";
 import Image from 'next/image'
 
 interface BackgroundImageProps {
@@ -297,9 +298,9 @@ export default function HomePage() {
               <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Instagram className="h-6 w-6" />
               </a>
-              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Linkedin className="h-6 w-6" />
-              </a> */}
+              <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <AiFillTikTok className="h-6 w-6" />
+              </a>
               <a 
   href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
   target="_blank" 
