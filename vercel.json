@@ -1,0 +1,16 @@
+{
+    "redirects": [
+      {
+        "source": "/(.*)",
+        "has": [
+          {
+            "type": "host",
+            "value": "(?<host>.*)"
+          }
+        ],
+        "destination": "https://$host/$1",
+        "statusCode": 308,
+        "permanent": true
+      }
+    ]
+  }
