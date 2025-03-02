@@ -1,16 +1,13 @@
 {
-    "redirects": [
+    "headers": [
       {
-        "source": "/:path*",
-        "has": [
+        "source": "/(.*)",
+        "headers": [
           {
-            "type": "header",
-            "key": "x-forwarded-proto",
-            "value": "http"
+            "key": "Access-Control-Allow-Origin",
+            "value": "https://giftedhomesandapartments.com"
           }
-        ],
-        "permanent": true,
-        "destination": "https://:host/:path*"
+        ]
       }
     ]
   }
