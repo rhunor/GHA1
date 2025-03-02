@@ -1,16 +1,16 @@
 {
     "redirects": [
       {
-        "source": "/(.*)",
+        "source": "/:path*",
         "has": [
           {
-            "type": "host",
-            "value": "(?<host>.*)"
+            "type": "header",
+            "key": "x-forwarded-proto",
+            "value": "http"
           }
         ],
-        "destination": "https://$host/$1",
-        "statusCode": 308,
-        "permanent": true
+        "permanent": true,
+        "destination": "https://:host/:path*"
       }
     ]
   }
