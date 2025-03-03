@@ -169,22 +169,22 @@ export default function PropertyDetailsPage() {
     return unavailableDates.includes(date);
   };
     // Check if a date range has any unavailable dates
-  const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+  // const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
+  //   const start = new Date(startDate);
+  //   const end = new Date(endDate);
     
     // Return true if any date in range is unavailable
-    const current = new Date(start);
-    while (current < end) {
-      const dateStr = current.toISOString().split('T')[0];
-      if (isDateUnavailable(dateStr)) {
-        return true;
-      }
-      current.setDate(current.getDate() + 1);
-    }
+  //   const current = new Date(start);
+  //   while (current < end) {
+  //     const dateStr = current.toISOString().split('T')[0];
+  //     if (isDateUnavailable(dateStr)) {
+  //       return true;
+  //     }
+  //     current.setDate(current.getDate() + 1);
+  //   }
     
-    return false;
-  };
+  //   return false;
+  // };
 
   // Validate date selection when dates change
   useEffect(() => {
@@ -192,23 +192,40 @@ export default function PropertyDetailsPage() {
       setDateError(null);
       return;
     }
-
+  
     const checkin = new Date(formData.checkIn);
     const checkout = new Date(formData.checkOut);
-
+  
     if (checkout <= checkin) {
       setDateError("Check-out date must be after check-in date");
       return;
     }
-
+  
+    // Move the function inside the useEffect
+    const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      // Return true if any date in range is unavailable
+      const current = new Date(start);
+      while (current < end) {
+        const dateStr = current.toISOString().split('T')[0];
+        if (isDateUnavailable(dateStr)) {
+          return true;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      
+      return false;
+    };
+  
     const unavailable = checkDateRangeAvailability(formData.checkIn, formData.checkOut);
     if (unavailable) {
       setDateError("Some dates in this range are unavailable. Please select different dates.");
     } else {
       setDateError(null);
     }
-  }, [formData.checkIn, formData.checkOut, checkDateRangeAvailability]);
-
+  }, [formData.checkIn, formData.checkOut, isDateUnavailable]);
 
   
 

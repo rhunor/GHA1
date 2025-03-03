@@ -55,9 +55,9 @@ export default function EditPropertyPage() {
   const params = useParams();
   const propertyId = params.id as string;
 
-  const searchParams = typeof window !== 'undefined'
-    ? new URLSearchParams(window.location.search)
-    : new URLSearchParams();
+  // const searchParams = typeof window !== 'undefined'
+  //   ? new URLSearchParams(window.location.search)
+  //   : new URLSearchParams();
 
     
 
