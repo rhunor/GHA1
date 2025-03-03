@@ -1,4 +1,4 @@
-// app/api/paystack/verify/route.ts
+// app/api/paystack/verify/[reference]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {

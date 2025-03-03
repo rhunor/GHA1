@@ -1,4 +1,10 @@
+//src/models/Property.ts
 import mongoose, { Schema, models } from 'mongoose';
+
+export interface Availability {
+  date: Date;
+  isAvailable: boolean;
+}
 
 export interface IProperty {
   title: string;
@@ -8,14 +14,27 @@ export interface IProperty {
   location: string;
   images: string[];
   features: string[];
-  airbnbLink?: string
+  airbnbLink?: string;
   specifications: {
     bedrooms: number;
     bathrooms: number;
     size: string;
     type: string;
   };
+  availability?: Availability[]; // New field to track booked dates
+  isBookable?: boolean; // Can be used to temporarily disable bookings
 }
+
+const availabilitySchema = new Schema({
+  date: {
+    type: Date,
+    required: true,
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true,
+  },
+});
 
 const propertySchema = new Schema<IProperty>(
   {
@@ -41,7 +60,7 @@ const propertySchema = new Schema<IProperty>(
     },
     airbnbLink: {
       type: String,
-      required: false, // Make it optional
+      required: false,
     },
     images: {
       type: [String],
@@ -68,6 +87,14 @@ const propertySchema = new Schema<IProperty>(
         type: String,
         required: true,
       },
+    },
+    availability: {
+      type: [availabilitySchema],
+      default: [],
+    },
+    isBookable: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

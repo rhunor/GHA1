@@ -2,19 +2,21 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import {  Instagram,  } from 'lucide-react'
+import { Instagram } from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
 import { MdEmail } from 'react-icons/md'
-import { AiFillTikTok } from "react-icons/ai";
-import { generateReference, extractPrice, calculateTotalAmount, initializePaystack } from '@/lib/paystackService'
+import { AiFillTikTok } from "react-icons/ai"
+import { generateReference, extractPrice, calculateTotalAmount } from '@/lib/paystackService'
 import Image from 'next/image'
+import { PaystackConfig } from '@/types/paystack';
+import PropertyReviews from '@/components/PropertyReviews';
 
 interface PropertyData {
-  _id?: string;          // MongoDB ID (optional)
-  id?: number;           // Your original numeric ID (optional)
+  _id?: string;
+  id?: number;
   title: string;
   description: string;
   thumbnail: string;
@@ -29,6 +31,7 @@ interface PropertyData {
     size: string;
     type: string;
   };
+  isBookable?: boolean;
 }
 
 interface BookingFormData {
@@ -39,11 +42,19 @@ interface BookingFormData {
   checkOut: string
   guests: number
 }
+
 interface PaystackResponse {
   reference: string;
-  // Add other properties if needed (e.g., status, message)
 }
-// Removed the custom PaystackResponse interface to avoid conflicts
+
+// Add Paystack type definition to Window
+declare global {
+  interface Window {
+    PaystackPop: {
+      setup: (config: PaystackConfig) => { openIframe: () => void };
+    };
+  }
+}
 
 export default function PropertyDetailsPage() {
   const params = useParams()
@@ -56,6 +67,8 @@ export default function PropertyDetailsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [fetchLoading, setFetchLoading] = useState(true)
   const [paymentSuccess, setPaymentSuccess] = useState<{ reference: string } | null>(null)
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([])
+  const [dateError, setDateError] = useState<string | null>(null)
   const [formData, setFormData] = useState<BookingFormData>({
     name: '',
     email: '',
@@ -65,6 +78,7 @@ export default function PropertyDetailsPage() {
     guests: 1
   })
 
+  // Fetch property data
   useEffect(() => {
     const fetchProperty = async () => {
       try {
@@ -103,6 +117,27 @@ export default function PropertyDetailsPage() {
     fetchProperty();
   }, [params.id, router]);
 
+  // Fetch property availability
+  useEffect(() => {
+    if (!property || !property._id) return;
+
+    const fetchAvailability = async () => {
+      try {
+        const response = await fetch(`/api/properties/${property._id}/availability`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUnavailableDates(data.unavailableDates || []);
+        }
+      } catch (error) {
+        console.error('Error fetching property availability:', error);
+      }
+    };
+    
+    fetchAvailability();
+  }, [property]);
+
+  // Image slideshow auto-play
   useEffect(() => {
     if (!property || !isAutoPlaying) return
 
@@ -115,6 +150,7 @@ export default function PropertyDetailsPage() {
     return () => clearInterval(timer)
   }, [property, isAutoPlaying])
 
+  // Load Paystack script
   useEffect(() => {
     const script = document.createElement('script')
     script.src = 'https://js.paystack.co/v1/inline.js'
@@ -127,6 +163,54 @@ export default function PropertyDetailsPage() {
       }
     }
   }, [])
+
+  // Check if a date is unavailable
+  const isDateUnavailable = (date: string) => {
+    return unavailableDates.includes(date);
+  };
+
+  // Validate date selection when dates change
+  useEffect(() => {
+    if (!formData.checkIn || !formData.checkOut) {
+      setDateError(null);
+      return;
+    }
+
+    // Make sure checkout is after checkin
+    const checkin = new Date(formData.checkIn);
+    const checkout = new Date(formData.checkOut);
+    
+    if (checkout <= checkin) {
+      setDateError('Check-out date must be after check-in date');
+      return;
+    }
+
+    // Check if any date in the range is unavailable
+    const unavailable = checkDateRangeAvailability(formData.checkIn, formData.checkOut);
+    if (unavailable) {
+      setDateError('Some dates in this range are unavailable. Please select different dates.');
+    } else {
+      setDateError(null);
+    }
+  }, [formData.checkIn, formData.checkOut]);
+
+  // Check if a date range has any unavailable dates
+  const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Return true if any date in range is unavailable
+    const current = new Date(start);
+    while (current < end) {
+      const dateStr = current.toISOString().split('T')[0];
+      if (isDateUnavailable(dateStr)) {
+        return true;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return false;
+  };
 
   if (fetchLoading) {
     return (
@@ -162,12 +246,61 @@ export default function PropertyDetailsPage() {
     }))
   }
 
+  // Format date strings to avoid conflicts with the date input's min attribute
+  const formatDateForInput = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Get tomorrow's date for minimum check-in
+  const getTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return formatDateForInput(tomorrow);
+  };
+
+  // Check the availability of a property for a date range
+  const checkAvailability = async (propertyId: string, checkIn: string, checkOut: string) => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          propertyId,
+          checkIn,
+          checkOut
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to check availability');
+      }
+      
+      const data = await response.json();
+      return data.available;
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      return false;
+    }
+  };
+
   const verifyTransaction = async (reference: string) => {
     try {
+      console.log(`Verifying transaction with reference: ${reference}`);
       const response = await fetch(`/api/paystack/verify?reference=${reference}`);
-      const data = await response.json();
       
-      if (data.status && data.data.status === 'success') {
+      if (!response.ok) {
+        console.error(`Verification failed with status: ${response.status}`);
+        const text = await response.text();
+        console.error(`Response body: ${text}`);
+        return false;
+      }
+      
+      const data = await response.json();
+      console.log('Verification response:', data);
+      
+      if (data.status && data.data && data.data.status === 'success') {
         return true;
       }
       
@@ -178,8 +311,73 @@ export default function PropertyDetailsPage() {
     }
   };
 
+  // Separate function to handle the payment callback
+  const handlePaymentCallback = async (response: PaystackResponse) => {
+    try {
+      console.log('Payment complete! Reference: ' + response.reference);
+      const isVerified = await verifyTransaction(response.reference);
+      
+      if (isVerified) {
+        setPaymentSuccess({ reference: response.reference });
+        
+        try {
+          await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              propertyId: property._id || property.id,
+              reference: response.reference,
+              ...formData,
+              paymentStatus: 'completed',
+            }),
+          });
+        } catch (error) {
+          console.error('Error saving booking:', error);
+        }
+        
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          checkIn: '',
+          checkOut: '',
+          guests: 1
+        });
+      } else {
+        alert('Payment verification failed. Please contact support with reference: ' + response.reference);
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error in payment callback:', error);
+      setIsLoading(false);
+      alert('Payment processing error. Please contact support with reference: ' + response.reference);
+    }
+  };
+
   const handlePaystackCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate dates again
+    if (dateError) {
+      alert('Please select available dates');
+      return;
+    }
+    
+    // Double-check availability with the server
+    const isAvailable = await checkAvailability(
+      property._id || property.id?.toString() || '',
+      formData.checkIn,
+      formData.checkOut
+    );
+    
+    if (!isAvailable) {
+      setDateError('Selected dates are no longer available. Please choose different dates.');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -187,7 +385,12 @@ export default function PropertyDetailsPage() {
       const price = extractPrice(property.price);
       const totalAmount = calculateTotalAmount(price, formData.checkIn, formData.checkOut);
       
-      const paystackConfig = {
+      // Make sure the Paystack script is loaded properly
+      if (typeof window === 'undefined' || !window.PaystackPop) {
+        throw new Error('Paystack not loaded correctly');
+      }
+      
+      const paystackConfig: PaystackConfig = {
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
         email: formData.email,
         amount: totalAmount * 100,
@@ -207,47 +410,13 @@ export default function PropertyDetailsPage() {
           setIsLoading(false);
           console.log('Payment window closed');
         },
-        callback: async function(response: PaystackResponse) {
-          console.log('Payment complete! Reference: ' + response.reference);
-          const isVerified = await verifyTransaction(response.reference);
-          
-          if (isVerified) {
-            setPaymentSuccess({ reference: response.reference });
-            
-            try {
-              await fetch('/api/bookings', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  propertyId: property._id || property.id,
-                  reference: response.reference,
-                  ...formData,
-                  paymentStatus: 'completed',
-                }),
-              });
-            } catch (error) {
-              console.error('Error saving booking:', error);
-            }
-            
-            setFormData({
-              name: '',
-              email: '',
-              phone: '',
-              checkIn: '',
-              checkOut: '',
-              guests: 1
-            });
-          } else {
-            alert('Payment verification failed. Please contact support with reference: ' + response.reference);
-          }
-          
-          setIsLoading(false);
+        callback: function(response: PaystackResponse) {
+          handlePaymentCallback(response);
         }
       };
       
-      const handler = initializePaystack(paystackConfig);
+      // Directly use the Paystack.setup method
+      const handler = window.PaystackPop.setup(paystackConfig);
       handler.openIframe();
     } catch (error) {
       console.error('Error initiating payment:', error);
@@ -261,7 +430,6 @@ export default function PropertyDetailsPage() {
     window.open(`https://wa.link/inwgi0?text=${encodeURIComponent(message)}`, '_blank');
   }
 
-  // Update the openAirbnb function in PropertyDetailsPage
   const openAirbnb = () => {
     console.log("Property object:", property);
     console.log("Airbnb link:", property.airbnbLink);
@@ -271,7 +439,7 @@ export default function PropertyDetailsPage() {
     
     window.open(airbnbUrl, '_blank');
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-0 md:pt-0 lg:pt-0">
       <Link href="/">
@@ -327,13 +495,25 @@ export default function PropertyDetailsPage() {
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               {property.title}
             </h1>
-            <span className="text-2xl font-semibold text-primary">
-              {property.price}
-            </span>
+            <div className="flex flex-col items-end">
+              <span className="text-2xl font-semibold text-primary mb-2">
+                {property.price}
+              </span>
+              {/* Additional Book Now button under the price */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsBookingModalOpen(true)}
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                disabled={!property.isBookable}
+              >
+                {property.isBookable === false ? 'Not Available' : 'Book Now'}
+              </motion.button>
+            </div>
           </div>
 
           <div className="mb-8">
@@ -399,9 +579,25 @@ export default function PropertyDetailsPage() {
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsBookingModalOpen(true)}
             className="w-full md:w-auto px-8 py-4 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors"
+            disabled={!property.isBookable}
           >
-            Book Now
+            {property.isBookable === false ? (
+              <>
+                <span className="inline-block mr-2">🚫</span> 
+                Currently Unavailable
+              </>
+            ) : (
+              <>
+                <Calendar className="inline-block mr-2 h-5 w-5" /> 
+                Book Now
+              </>
+            )}
           </motion.button>
+          
+          {/* Reviews section */}
+          <div className="mt-16">
+            <PropertyReviews propertyId={property._id || property.id?.toString() || ''} />
+          </div>
         </div>
       </div>
 
@@ -550,28 +746,46 @@ export default function PropertyDetailsPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Check-in Date</label>
-                        <input
-                          type="date"
-                          name="checkIn"
-                          value={formData.checkIn}
-                          onChange={handleInputChange}
-                          required
-                          min={new Date().toISOString().split('T')[0]}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        />
+                        <div className="relative">
+                          <input
+                            type="date"
+                            name="checkIn"
+                            value={formData.checkIn}
+                            onChange={handleInputChange}
+                            required
+                            min={getTomorrow()}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
+                              dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                            }`}
+                          />
+                          <Calendar className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Only available dates can be selected</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Check-out Date</label>
-                        <input
-                          type="date"
-                          name="checkOut"
-                          value={formData.checkOut}
-                          onChange={handleInputChange}
-                          required
-                          min={formData.checkIn || new Date().toISOString().split('T')[0]}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        />
+                        <div className="relative">
+                          <input
+                            type="date"
+                            name="checkOut"
+                            value={formData.checkOut}
+                            onChange={handleInputChange}
+                            required
+                            min={formData.checkIn || getTomorrow()}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
+                              dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                            }`}
+                            disabled={!formData.checkIn}
+                          />
+                          <Calendar className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                        </div>
                       </div>
+                      
+                      {dateError && (
+                        <div className="col-span-2 text-red-500 text-sm mt-1">
+                          {dateError}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-8 flex justify-end space-x-4">
@@ -584,8 +798,8 @@ export default function PropertyDetailsPage() {
                       </button>
                       <button
                         type="submit"
-                        disabled={isLoading}
-                        className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        disabled={isLoading || !!dateError}
+                        className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center ${(isLoading || !!dateError) ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
                         {isLoading ? (
                           <>
@@ -668,32 +882,26 @@ export default function PropertyDetailsPage() {
             </div>
             
             <div className="flex space-x-6">
-              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Twitter className="h-6 w-6" />
-              </a> */}
               <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Instagram className="h-6 w-6" />
               </a>
-               <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                              <AiFillTikTok className="h-6 w-6" />
-                            </a>
+              <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
+                <AiFillTikTok className="h-6 w-6" />
+              </a>
               <a 
-  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-  target="_blank" 
-  rel="noopener noreferrer" 
-  className="text-gray-600 hover:text-primary dark:text-gray-400"
->
-  <BsWhatsapp className="h-6 w-6" />
-</a>
-            <a 
-              href="mailto:Horizon2haus@gmail.com" 
-              className="text-gray-600 hover:text-primary dark:text-gray-400"
-            >
-              <MdEmail className="h-6 w-6" />
-            </a>
+                href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <BsWhatsapp className="h-6 w-6" />
+              </a>
+              <a 
+                href="mailto:Horizon2haus@gmail.com" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <MdEmail className="h-6 w-6" />
+              </a>
             </div>
             
             <div className="text-sm text-center text-gray-600 dark:text-gray-400">
@@ -703,5 +911,5 @@ export default function PropertyDetailsPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

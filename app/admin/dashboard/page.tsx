@@ -2,118 +2,157 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Calendar, ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+// import Image from "next/image";
 
-export default function AdminDashboardPage() {
-  const { data: session } = useSession();
-  const [propertyCount, setPropertyCount] = useState(0);
+interface Property {
+  _id: string;
+  title: string;
+  thumbnail: string;
+  location: string;
+  price: string;
+  isBookable?: boolean;
+}
+
+export default function AvailabilityManagementPage() {
+  const router = useRouter();
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProperties = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/properties");
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch properties: ${response.status}`);
+        }
+        
         const data = await response.json();
-        setPropertyCount(data.properties.length);
-        setLoading(false);
+        setProperties(data.properties);
       } catch (error) {
-        console.error("Failed to fetch properties:", error);
+        console.error("Error:", error);
+        setError("Failed to load properties. Please try again.");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchProperties();
   }, []);
 
   return (
     <div>
+      <div className="mb-6">
+        <Link
+          href="/admin/dashboard"
+          className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to Dashboard
+        </Link>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-          Admin Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Welcome back, {session?.user.name || "Admin"}
-        </p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Manage Property Availability
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Select a property to manage its availability calendar
+            </p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">
-                  Total Properties
-                </p>
-                {loading ? (
-                  <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
-                ) : (
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {propertyCount}
-                  </h2>
-                )}
-              </div>
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Home className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Link
-                href="/admin/properties"
-                className="text-primary text-sm font-medium hover:underline"
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 animate-pulse"
               >
-                View all properties
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">
-                  Admin User
-                </p>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  1
-                </h2>
+                <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-md mb-4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                <User className="h-6 w-6 text-blue-500 dark:text-blue-400" />
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        ) : properties.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              No Properties Found
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Add property listings before managing availability.
+            </p>
             <Link href="/admin/properties/new">
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-1">
-                  Add New Property
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Create a new property listing
-                </p>
-              </div>
-            </Link>
-            <Link href="/properties">
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-1">
-                  View Public Site
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  See your website as visitors see it
-                </p>
-              </div>
+              <button className="bg-primary text-white px-4 py-2 rounded-md inline-flex items-center">
+                <Home className="h-5 w-5 mr-2" />
+                Add Your First Property
+              </button>
             </Link>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {properties.map((property) => (
+              <div
+                key={property._id}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="h-48 relative">
+                  <img
+                    src={property.thumbnail}
+                    alt={property.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h3 className="text-white font-bold text-lg truncate">
+                      {property.title}
+                    </h3>
+                    <p className="text-white/80 text-sm truncate">
+                      {property.location}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                        Status: {" "}
+                        <span className={property.isBookable === false ? "text-red-500" : "text-green-500"}>
+                          {property.isBookable === false ? "Unavailable" : "Available for booking"}
+                        </span>
+                      </p>
+                    </div>
+                    <Link href={`/admin/properties/edit/${property._id}?tab=availability`}>
+                      <button className="bg-primary text-white px-3 py-1.5 rounded text-sm font-medium flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Manage
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );

@@ -1,3 +1,4 @@
+//src/models/User.ts
 import mongoose, { Schema, models } from 'mongoose';
 import bcrypt from 'bcrypt';
 
