@@ -222,7 +222,9 @@ export async function GET(request: NextRequest) {
     interface BookingQuery {
       propertyId?: string;
       paymentStatus?: string;
-      [key: string]: any; // If you need to allow additional properties
+      isActive?: boolean;
+      reference?: string;
+      // Add any other valid query parameters you might use
     }
     
     const query: BookingQuery = {};

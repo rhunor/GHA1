@@ -1,6 +1,6 @@
 // app/properties/[id]/page.tsx
 "use client"
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard, Calendar } from 'lucide-react'
 import Link from 'next/link'
@@ -165,9 +165,9 @@ export default function PropertyDetailsPage() {
   }, [])
 
   // Check if a date is unavailable
-  const isDateUnavailable = (date: string) => {
+  const isDateUnavailable = useCallback((date: string) => {
     return unavailableDates.includes(date);
-  };
+  }, [unavailableDates]);
     // Check if a date range has any unavailable dates
   // const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
   //   const start = new Date(startDate);
