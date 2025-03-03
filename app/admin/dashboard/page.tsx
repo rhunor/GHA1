@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
-// import Image from "next/image";
+import Image from "next/image"; // Import Image from next/image
+import { ArrowLeft, Calendar, ChevronRight, Home } from "lucide-react";
 
 interface Property {
   _id: string;
@@ -17,7 +16,6 @@ interface Property {
 }
 
 export default function AvailabilityManagementPage() {
-  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,11 +25,11 @@ export default function AvailabilityManagementPage() {
       try {
         setLoading(true);
         const response = await fetch("/api/properties");
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch properties: ${response.status}`);
         }
-        
+
         const data = await response.json();
         setProperties(data.properties);
       } catch (error) {
@@ -115,10 +113,11 @@ export default function AvailabilityManagementPage() {
                 className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="h-48 relative">
-                  <img
+                  <Image
                     src={property.thumbnail}
                     alt={property.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                   <div className="absolute bottom-3 left-3 right-3">
@@ -134,13 +133,23 @@ export default function AvailabilityManagementPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Status: {" "}
-                        <span className={property.isBookable === false ? "text-red-500" : "text-green-500"}>
-                          {property.isBookable === false ? "Unavailable" : "Available for booking"}
+                        Status:{" "}
+                        <span
+                          className={
+                            property.isBookable === false
+                              ? "text-red-500"
+                              : "text-green-500"
+                          }
+                        >
+                          {property.isBookable === false
+                            ? "Unavailable"
+                            : "Available for booking"}
                         </span>
                       </p>
                     </div>
-                    <Link href={`/admin/properties/edit/${property._id}?tab=availability`}>
+                    <Link
+                      href={`/admin/properties/edit/${property._id}?tab=availability`}
+                    >
                       <button className="bg-primary text-white px-3 py-1.5 rounded text-sm font-medium flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
                         Manage

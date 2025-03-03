@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mongoose from 'mongoose';
 import connectToDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Property from '@/models/Property';
@@ -58,6 +57,10 @@ async function isPropertyAvailable(propertyId: string, checkIn: Date, checkOut: 
         isAvailable: boolean;
       }
 
+      interface Query {
+        propertyId?: string;
+        paymentStatus?: string;
+      }
       interface BookingData {
         propertyId: string;
         reference: string;

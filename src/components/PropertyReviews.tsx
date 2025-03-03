@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Star, StarHalf, MessageSquare, ThumbsUp, Award } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { Star, StarHalf, MessageSquare, Award } from "lucide-react"; // Removed ThumbsUp
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Review {
   _id: string;
@@ -22,33 +22,31 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
-  // Form state
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: "",
+    email: "",
     rating: 5,
-    comment: '',
-    bookingReference: ''
+    comment: "",
+    bookingReference: "",
   });
 
-  // Fetch reviews on component mount
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
         const response = await fetch(`/api/reviews?propertyId=${propertyId}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch reviews');
+          throw new Error("Failed to fetch reviews");
         }
-        
+
         const data = await response.json();
         setReviews(data.reviews);
         setAvgRating(data.avgRating);
       } catch (error) {
-        console.error('Error:', error);
-        setError('Unable to load reviews');
+        console.error("Error:", error);
+        setError("Unable to load reviews");
       } finally {
         setLoading(false);
       }
@@ -57,56 +55,52 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
     fetchReviews();
   }, [propertyId]);
 
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: name === 'rating' ? parseInt(value) : value
+      [name]: name === "rating" ? parseInt(value) : value,
     }));
   };
 
-  // Handle review submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const response = await fetch('/api/reviews', {
-        method: 'POST',
+      const response = await fetch("/api/reviews", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           propertyId,
           ...formData,
         }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit review');
+        throw new Error(errorData.error || "Failed to submit review");
       }
-      
+
       const data = await response.json();
-      
-      // Reset form
+
       setFormData({
-        name: '',
-        email: '',
+        name: "",
+        email: "",
         rating: 5,
-        comment: '',
-        bookingReference: ''
+        comment: "",
+        bookingReference: "",
       });
-      
-      // Show success message and hide form
+
       setSuccessMessage(data.message);
       setShowReviewForm(false);
-      
-      // If the review was auto-approved (verified stay), add it to the list
-      if (data.review.status === 'approved') {
-        setReviews(prevReviews => [data.review, ...prevReviews]);
-        
-        // Update average rating
+
+      if (data.review.status === "approved") {
+        setReviews((prevReviews) => [data.review, ...prevReviews]);
+
         if (avgRating !== null) {
           const totalRating = avgRating * reviews.length + data.review.rating;
           setAvgRating(parseFloat((totalRating / (reviews.length + 1)).toFixed(1)));
@@ -115,36 +109,34 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
         }
       }
     } catch (error) {
-      console.error('Error submitting review:', error);
-      setError('Failed to submit review. Please try again.');
+      console.error("Error submitting review:", error);
+      setError("Failed to submit review. Please try again.");
     }
   };
 
-  // Render star rating
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     for (let i = 0; i < fullStars; i++) {
       stars.push(<Star key={`star-${i}`} className="h-5 w-5 fill-yellow-400 text-yellow-400" />);
     }
-    
+
     if (hasHalfStar) {
       stars.push(<StarHalf key="half-star" className="h-5 w-5 fill-yellow-400 text-yellow-400" />);
     }
-    
+
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(<Star key={`empty-star-${i}`} className="h-5 w-5 text-gray-300" />);
     }
-    
+
     return stars;
   };
 
-  // Format date
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
@@ -156,28 +148,25 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
             <MessageSquare className="h-6 w-6 mr-2 text-primary" />
             Guest Reviews
           </h2>
-          
+
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
             className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            {showReviewForm ? 'Cancel' : 'Write a Review'}
+            {showReviewForm ? "Cancel" : "Write a Review"}
           </button>
         </div>
-        
+
         {avgRating !== null && (
           <div className="flex items-center mb-6">
-            <div className="flex items-center mr-3">
-              {renderStars(avgRating)}
-            </div>
+            <div className="flex items-center mr-3">{renderStars(avgRating)}</div>
             <span className="text-xl font-semibold text-gray-900 dark:text-white">{avgRating}</span>
             <span className="text-gray-500 dark:text-gray-400 ml-2">
-              ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+              ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
             </span>
           </div>
         )}
 
-        {/* Success Message */}
         <AnimatePresence>
           {successMessage && (
             <motion.div
@@ -191,7 +180,6 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
           )}
         </AnimatePresence>
 
-        {/* Error Message */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -205,22 +193,25 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
           )}
         </AnimatePresence>
 
-        {/* Review Form */}
         <AnimatePresence>
           {showReviewForm && (
             <motion.form
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSubmit}
               className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden"
             >
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Share Your Experience</h3>
-              
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Share Your Experience
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Your Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -231,7 +222,9 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -242,9 +235,11 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                   />
                 </div>
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Booking Reference (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Booking Reference (optional)
+                </label>
                 <input
                   type="text"
                   name="bookingReference"
@@ -254,12 +249,14 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  If you've stayed with us, add your booking reference for a verified review that will be published immediately.
+                  If you&apos;ve stayed with us, add your booking reference for a verified review that will be published immediately.
                 </p>
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rating</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Rating
+                </label>
                 <div className="flex items-center">
                   <select
                     name="rating"
@@ -273,14 +270,14 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                     <option value="2">2 - Fair</option>
                     <option value="1">1 - Poor</option>
                   </select>
-                  <div className="ml-3 flex">
-                    {renderStars(formData.rating)}
-                  </div>
+                  <div className="ml-3 flex">{renderStars(formData.rating)}</div>
                 </div>
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Review</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Your Review
+                </label>
                 <textarea
                   name="comment"
                   value={formData.comment}
@@ -291,7 +288,7 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                   placeholder="Tell us about your experience..."
                 ></textarea>
               </div>
-              
+
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -305,7 +302,6 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
         </AnimatePresence>
       </div>
 
-      {/* Reviews List */}
       <div className="p-6">
         {loading ? (
           <div className="flex justify-center py-8">
@@ -313,7 +309,9 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
           </div>
         ) : reviews.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">No reviews yet. Be the first to share your experience!</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              No reviews yet. Be the first to share your experience!
+            </p>
           </div>
         ) : (
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -336,9 +334,7 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                       )}
                     </div>
                     <div className="flex items-center mt-1">
-                      <div className="flex mr-2">
-                        {renderStars(review.rating)}
-                      </div>
+                      <div className="flex mr-2">{renderStars(review.rating)}</div>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(review.createdAt)}
                       </span>

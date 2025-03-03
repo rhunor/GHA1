@@ -8,7 +8,6 @@ import Link from "next/link";
 import AvailabilityManager from "@/components/admin/AvailabilityManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-
 interface PropertyData {
   _id: string;
   title: string;
@@ -38,34 +37,36 @@ interface Review {
   createdAt: string;
 }
 
+interface Booking {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  reference: string;
+  checkIn: Date;
+  checkOut: Date;
+  guests: number;
+  paymentStatus: string;
+  createdAt: Date;
+}
+
 export default function EditPropertyPage() {
- 
-  
- 
   const router = useRouter();
   const params = useParams();
   const propertyId = params.id as string;
-   // In Next.js 13+ App Router, we need to use the following to get search params
-   const searchParams = typeof window !== 'undefined' 
-   ? new URLSearchParams(window.location.search) 
-   : new URLSearchParams();
- 
- const tabParam = searchParams.get('tab');
- 
- // Set the default tab based on the URL query parameter
- const [activeTab, setActiveTab] = useState(
-   tabParam === 'availability' ? 'availability' : 
-   tabParam === 'reviews' ? 'reviews' : 
-   tabParam === 'bookings' ? 'bookings' : 
-   'details'
- );
-  
+
+  const searchParams = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search)
+    : new URLSearchParams();
+
+  const tabParam = searchParams.get('tab');
+
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState("");
   const [features, setFeatures] = useState<string[]>([""]);
   const [images, setImages] = useState<string[]>([""]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [formData, setFormData] = useState<PropertyData>({
     _id: "",

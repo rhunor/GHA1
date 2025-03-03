@@ -168,33 +168,7 @@ export default function PropertyDetailsPage() {
   const isDateUnavailable = (date: string) => {
     return unavailableDates.includes(date);
   };
-
-  // Validate date selection when dates change
-  useEffect(() => {
-    if (!formData.checkIn || !formData.checkOut) {
-      setDateError(null);
-      return;
-    }
-
-    // Make sure checkout is after checkin
-    const checkin = new Date(formData.checkIn);
-    const checkout = new Date(formData.checkOut);
-    
-    if (checkout <= checkin) {
-      setDateError('Check-out date must be after check-in date');
-      return;
-    }
-
-    // Check if any date in the range is unavailable
-    const unavailable = checkDateRangeAvailability(formData.checkIn, formData.checkOut);
-    if (unavailable) {
-      setDateError('Some dates in this range are unavailable. Please select different dates.');
-    } else {
-      setDateError(null);
-    }
-  }, [formData.checkIn, formData.checkOut]);
-
-  // Check if a date range has any unavailable dates
+    // Check if a date range has any unavailable dates
   const checkDateRangeAvailability = (startDate: string, endDate: string): boolean => {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -211,6 +185,32 @@ export default function PropertyDetailsPage() {
     
     return false;
   };
+
+  // Validate date selection when dates change
+  useEffect(() => {
+    if (!formData.checkIn || !formData.checkOut) {
+      setDateError(null);
+      return;
+    }
+
+    const checkin = new Date(formData.checkIn);
+    const checkout = new Date(formData.checkOut);
+
+    if (checkout <= checkin) {
+      setDateError("Check-out date must be after check-in date");
+      return;
+    }
+
+    const unavailable = checkDateRangeAvailability(formData.checkIn, formData.checkOut);
+    if (unavailable) {
+      setDateError("Some dates in this range are unavailable. Please select different dates.");
+    } else {
+      setDateError(null);
+    }
+  }, [formData.checkIn, formData.checkOut, checkDateRangeAvailability]);
+
+
+  
 
   if (fetchLoading) {
     return (
