@@ -68,10 +68,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 // Update property availability
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }>}) {
   try {
     await connectToDB();
-    const propertyId = context.params.id;
+    const propertyId = (await params).id;
     const data = await request.json();
 
     const property = await Property.findById(propertyId);
