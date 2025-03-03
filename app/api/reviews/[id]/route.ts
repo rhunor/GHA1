@@ -5,12 +5,12 @@ import Review from '@/models/Review';
 // Get a single review by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
     
-    const review = await Review.findById(params.id);
+    const review = await Review.findById((await params).id);
     
     if (!review) {
       return NextResponse.json(
@@ -32,7 +32,7 @@ export async function GET(
 // Update a review (admin use)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
@@ -40,7 +40,7 @@ export async function PUT(
     const data = await request.json();
     
     // Find the review
-    const review = await Review.findById(params.id);
+    const review = await Review.findById((await params).id);
     
     if (!review) {
       return NextResponse.json(
@@ -77,12 +77,12 @@ export async function PUT(
 // Delete a review (admin use)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
     
-    const review = await Review.findByIdAndDelete(params.id);
+    const review = await Review.findByIdAndDelete((await params).id);
     
     if (!review) {
       return NextResponse.json(
