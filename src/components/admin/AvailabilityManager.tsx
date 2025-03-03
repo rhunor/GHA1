@@ -146,7 +146,7 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
   };
 
   const isDateBooked = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
+    // const dateStr = date.toISOString().split("T")[0];
 
     return bookings.some((booking) => {
       const checkIn = new Date(booking.checkIn);

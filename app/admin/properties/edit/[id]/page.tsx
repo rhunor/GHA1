@@ -59,7 +59,7 @@ export default function EditPropertyPage() {
     ? new URLSearchParams(window.location.search)
     : new URLSearchParams();
 
-  const tabParam = searchParams.get('tab');
+    
 
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);

@@ -14,11 +14,11 @@ interface BookingType {
   checkOut: string;
 }
 
-interface PropertyType {
-  _id: string;
-  isBookable?: boolean;
-  availability?: Availability[];
-}
+// interface PropertyType {
+//   _id: string;
+//   isBookable?: boolean;
+//   availability?: Availability[];
+// }
 
 // Get all availability dates for a property
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     for (const booking of bookings) {
       const start = new Date(booking.checkIn);
       const end = new Date(booking.checkOut);
-      let current = new Date(start);
+      const current = new Date(start);
       while (current < end) {
         bookedDates.push(current.toISOString().split("T")[0]);
         current.setDate(current.getDate() + 1);

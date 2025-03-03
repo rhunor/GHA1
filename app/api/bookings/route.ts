@@ -57,28 +57,28 @@ async function isPropertyAvailable(propertyId: string, checkIn: Date, checkOut: 
         isAvailable: boolean;
       }
 
-      interface Query {
-        propertyId?: string;
-        paymentStatus?: string;
-      }
-      interface BookingData {
-        propertyId: string;
-        reference: string;
-        name: string;
-        email: string;
-        phone: string;
-        checkIn: Date;
-        checkOut: Date;
-        guests: number;
-        paymentStatus: string;
-        isActive: boolean;
-      }
+      // interface Query {
+      //   propertyId?: string;
+      //   paymentStatus?: string;
+      // }
+      // interface BookingData {
+      //   propertyId: string;
+      //   reference: string;
+      //   name: string;
+      //   email: string;
+      //   phone: string;
+      //   checkIn: Date;
+      //   checkOut: Date;
+      //   guests: number;
+      //   paymentStatus: string;
+      //   isActive: boolean;
+      // }
 
-      interface PropertyData {
-        _id: string;
-        isBookable: boolean;
-        availability: Availability[];
-      }
+      // interface PropertyData {
+      //   _id: string;
+      //   isBookable: boolean;
+      //   availability: Availability[];
+      // }
 
       const dateAvailability: Availability | undefined = property.availability.find(
         (a: Availability) => new Date(a.date).toISOString().split('T')[0] === dateStr
@@ -219,7 +219,13 @@ export async function GET(request: NextRequest) {
     const propertyId = searchParams.get('propertyId');
     const status = searchParams.get('status');
     
-    const query: any = {};
+    interface BookingQuery {
+      propertyId?: string;
+      paymentStatus?: string;
+      [key: string]: any; // If you need to allow additional properties
+    }
+    
+    const query: BookingQuery = {};
     
     if (propertyId) {
       query.propertyId = propertyId;
