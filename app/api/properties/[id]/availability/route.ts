@@ -1,3 +1,4 @@
+//app/api/properties/[id]/availability/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import connectToDB from "@/lib/mongodb";
 import Property from "@/models/Property";

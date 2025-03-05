@@ -1,3 +1,4 @@
+//src/lib/notifications.ts
 import nodemailer from "nodemailer";
 import Property from "@/models/Property";
 

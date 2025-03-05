@@ -11,8 +11,16 @@ interface DateAvailability {
 }
 
 interface Booking {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  reference: string;
   checkIn: string;
   checkOut: string;
+  guests: number;
+  paymentStatus: string;
+  createdAt: Date;
 }
 
 const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId }) => {
@@ -146,8 +154,6 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
   };
 
   const isDateBooked = (date: Date) => {
-    // const dateStr = date.toISOString().split("T")[0];
-
     return bookings.some((booking) => {
       const checkIn = new Date(booking.checkIn);
       const checkOut = new Date(booking.checkOut);
@@ -174,8 +180,9 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
   };
 
   const toggleDateSelection = (date: Date, isCurrentMonth: boolean, isBooked: boolean) => {
-    if (!isCurrentMonth || isBooked) return;
-
+    if (!isCurrentMonth) return;
+    
+    // Allow selecting booked dates (removed the isBooked restriction)
     const dateStr = formatDate(date);
     const isUnavailable = isDateUnavailable(date);
 
@@ -185,6 +192,12 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
       setSelectedDates((prev) => prev.filter((_, i) => i !== existingIndex));
     } else {
       setSelectedDates((prev) => [...prev, { date: dateStr, isAvailable: isUnavailable }]);
+    }
+
+    // If the date is booked, warn the admin
+    if (isBooked && existingIndex < 0) {
+      setSuccess(null); // Clear any existing success message
+      setError("Warning: You're modifying a date with an existing booking. This will affect the guest's reservation.");
     }
   };
 
@@ -250,6 +263,168 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (!confirm("Are you sure you want to delete this booking? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to delete booking");
+      }
+      
+      // Update the local state to remove the deleted booking
+      setBookings(bookings.filter(booking => booking._id !== bookingId));
+      
+      // Refresh availability data
+      const availabilityResponse = await fetch(`/api/properties/${propertyId}/availability`);
+      if (availabilityResponse.ok) {
+        const availabilityData = await availabilityResponse.json();
+        setUnavailableDates(availabilityData.unavailableDates || []);
+      }
+      
+      setSuccess("Booking deleted successfully. The dates are now available for new bookings.");
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Failed to delete booking. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBulkDateSelection = (makeAvailable: boolean) => {
+    const startDateInput = document.getElementById('bulkStartDate') as HTMLInputElement;
+    const endDateInput = document.getElementById('bulkEndDate') as HTMLInputElement;
+    
+    if (!startDateInput.value || !endDateInput.value) {
+      setError("Please select both start and end dates");
+      return;
+    }
+    
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    
+    if (endDate < startDate) {
+      setError("End date must be after start date");
+      return;
+    }
+    
+    const newSelectedDates: DateAvailability[] = [];
+    const current = new Date(startDate);
+    
+    while (current <= endDate) {
+      newSelectedDates.push({
+        date: formatDate(current),
+        isAvailable: makeAvailable
+      });
+      current.setDate(current.getDate() + 1);
+    }
+    
+    setSelectedDates(newSelectedDates);
+    setError(null);
+    setSuccess(`Selected ${newSelectedDates.length} dates. Click "Save Changes" to apply.`);
+  };
+
+  const renderBulkDateSelection = () => {
+    return (
+      <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+        <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">Bulk Date Management</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Start Date
+            </label>
+            <input 
+              type="date"
+              id="bulkStartDate"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              End Date
+            </label>
+            <input 
+              type="date"
+              id="bulkEndDate"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:text-white"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end mt-4 space-x-2">
+          <button
+            onClick={() => handleBulkDateSelection(false)}
+            className="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
+          >
+            Mark Unavailable
+          </button>
+          <button
+            onClick={() => handleBulkDateSelection(true)}
+            className="px-3 py-1 bg-green-100 text-green-700 rounded-md text-sm hover:bg-green-200"
+          >
+            Mark Available
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBookingsSection = () => {
+    return (
+      <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Existing Bookings</h3>
+        
+        {bookings.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400">No bookings found for this property.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Guest</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Check In</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Check Out</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                {bookings.map((booking) => (
+                  <tr key={booking._id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{booking.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(booking.checkIn).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(booking.checkOut).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{booking.reference}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button 
+                        onClick={() => handleDeleteBooking(booking._id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const getDayOfMonth = (date: Date) => {
@@ -375,6 +550,8 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
       </div>
 
       <div className="p-6">
+        {renderBulkDateSelection()}
+
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={goToPreviousMonth}
@@ -425,7 +602,7 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
               <button
                 key={index}
                 onClick={() => toggleDateSelection(day.date, day.isCurrentMonth, day.isBooked)}
-                disabled={!day.isCurrentMonth || day.isBooked}
+                disabled={!day.isCurrentMonth}
                 className={`
                   relative h-12 p-1 rounded-md transition-colors
                   ${!day.isCurrentMonth ? "opacity-30" : ""}
@@ -435,7 +612,7 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
                         ? "bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40"
                         : "bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40"
                       : day.isBooked
-                        ? "bg-blue-100 dark:bg-blue-900/30 cursor-not-allowed"
+                        ? "bg-blue-100 dark:bg-blue-900/30"
                         : day.isUnavailable
                           ? "bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-800/30"
                           : "hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -493,6 +670,8 @@ const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({ propertyId })
             <span className="text-gray-700 dark:text-gray-300">Other Months</span>
           </div>
         </div>
+
+        {renderBookingsSection()}
       </div>
     </div>
   );

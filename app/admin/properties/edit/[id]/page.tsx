@@ -1,3 +1,4 @@
+//app/admin/properties/edit/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -124,7 +125,7 @@ export default function EditPropertyPage() {
     // Fetch reviews
     const fetchReviews = async () => {
       try {
-        const response = await fetch(`/api/reviews?propertyId=${propertyId}`);
+        const response = await fetch(`/api/reviews?propertyId=${propertyId}&isAdmin=true`);
         
         if (response.ok) {
           const data = await response.json();
