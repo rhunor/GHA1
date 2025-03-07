@@ -241,6 +241,7 @@ export default function HomePage() {
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
                 <NavItem href="/about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
                 <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
+                <NavItem href="/contactus">contact us</NavItem>
                 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
