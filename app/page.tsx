@@ -214,6 +214,7 @@ export default function HomePage() {
             <div className="hidden md:flex items-center space-x-8">
               <NavItem href="/about">About</NavItem> 
               <NavItem href="/properties">Properties</NavItem>
+              <NavItem href="/contactus">contact us</NavItem>
               
               <button
                 onClick={() => setDarkMode(!darkMode)}
