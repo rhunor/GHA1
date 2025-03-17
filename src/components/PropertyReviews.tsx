@@ -1,7 +1,7 @@
-//src/components/PropertyReviews.tsx
 import React, { useState, useEffect } from "react";
-import { Star, StarHalf, MessageSquare, Award } from "lucide-react"; // Removed ThumbsUp
+import { Star, StarHalf, MessageSquare, Award, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 interface Review {
   _id: string;
@@ -23,6 +23,8 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -55,6 +57,18 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
 
     fetchReviews();
   }, [propertyId]);
+
+  // Set visible reviews based on showAllReviews state
+  useEffect(() => {
+    if (reviews.length === 0) return;
+    
+    if (showAllReviews) {
+      setVisibleReviews(reviews);
+    } else {
+      // Show only the first 3 reviews
+      setVisibleReviews(reviews.slice(0, 3));
+    }
+  }, [reviews, showAllReviews]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -143,26 +157,36 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
 
   return (
     <div className="mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
-            <MessageSquare className="h-6 w-6 mr-2 text-primary" />
+      <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
+            <MessageSquare className="h-5 w-5 md:h-6 md:w-6 mr-2 text-primary flex-shrink-0" />
             Guest Reviews
           </h2>
 
-          <button
-            onClick={() => setShowReviewForm(!showReviewForm)}
-            className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            {showReviewForm ? "Cancel" : "Write a Review"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setShowReviewForm(!showReviewForm)}
+              className="px-3 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              {showReviewForm ? "Cancel" : "Write a Review"}
+            </button>
+            
+            <Link 
+              href={`/reviews?propertyId=${propertyId}`}
+              className="px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white rounded-md text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center"
+            >
+              Review Page
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </div>
         </div>
 
         {avgRating !== null && (
-          <div className="flex items-center mb-6">
-            <div className="flex items-center mr-3">{renderStars(avgRating)}</div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-white">{avgRating}</span>
-            <span className="text-gray-500 dark:text-gray-400 ml-2">
+          <div className="flex flex-wrap items-center mb-6">
+            <div className="flex items-center mr-3 mb-2 md:mb-0">{renderStars(avgRating)}</div>
+            <span className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mr-2">{avgRating}</span>
+            <span className="text-gray-500 dark:text-gray-400">
               ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
             </span>
           </div>
@@ -258,12 +282,12 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Rating
                 </label>
-                <div className="flex items-center">
+                <div className="flex flex-wrap items-center gap-2">
                   <select
                     name="rating"
                     value={formData.rating}
                     onChange={handleInputChange}
-                    className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:text-white"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:text-white"
                   >
                     <option value="5">5 - Excellent</option>
                     <option value="4">4 - Very Good</option>
@@ -271,7 +295,7 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
                     <option value="2">2 - Fair</option>
                     <option value="1">1 - Poor</option>
                   </select>
-                  <div className="ml-3 flex">{renderStars(formData.rating)}</div>
+                  <div className="flex">{renderStars(formData.rating)}</div>
                 </div>
               </div>
 
@@ -303,51 +327,72 @@ const PropertyReviews: React.FC<PropertyReviewsProps> = ({ propertyId }) => {
         </AnimatePresence>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : reviews.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               No reviews yet. Be the first to share your experience!
             </p>
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Write a Review
+            </button>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {reviews.map((review) => (
-              <li key={review._id} className="py-6">
-                <div className="flex items-start mb-2">
-                  <div className="bg-gray-100 dark:bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center mr-3">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">
-                      {review.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center">
-                      <h4 className="font-medium text-gray-900 dark:text-white">{review.name}</h4>
-                      {review.isVerifiedStay && (
-                        <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full flex items-center">
-                          <Award className="h-3 w-3 mr-1" />
-                          Verified Stay
+          <>
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {visibleReviews.map((review) => (
+                <li key={review._id} className="py-4 md:py-6">
+                  <div className="flex flex-col md:flex-row md:items-start">
+                    <div className="flex items-start mb-2 md:mb-0 md:mr-6 md:w-48">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center mr-3 flex-shrink-0">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">
+                          {review.name.charAt(0).toUpperCase()}
                         </span>
-                      )}
+                      </div>
+                      <div>
+                        <div className="flex items-center flex-wrap">
+                          <h4 className="font-medium text-gray-900 dark:text-white mr-2">{review.name}</h4>
+                          {review.isVerifiedStay && (
+                            <span className="mt-1 md:mt-0 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full flex items-center">
+                              <Award className="h-3 w-3 mr-1" />
+                              Verified Stay
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center mt-1">
+                          <div className="flex mr-2">{renderStars(review.rating)}</div>
+                        </div>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 block mt-1">
+                          {formatDate(review.createdAt)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center mt-1">
-                      <div className="flex mr-2">{renderStars(review.rating)}</div>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(review.createdAt)}
-                      </span>
+                    <div className="flex-1 mt-2 md:mt-0">
+                      <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
                     </div>
                   </div>
-                </div>
-                <div className="ml-13">
-                  <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+            
+            {reviews.length > 3 && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAllReviews(!showAllReviews)}
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {showAllReviews ? 'Show Less' : `View All ${reviews.length} Reviews`}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

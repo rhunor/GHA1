@@ -619,125 +619,211 @@ export default function EditPropertyPage() {
             <AvailabilityManager propertyId={propertyId} />
           </TabsContent>
 
-          <TabsContent value="reviews">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
-                Manage Reviews
-              </h2>
+ {/* This is the modified reviews section to be used in the TabsContent for reviews
+// in app/admin/properties/edit/[id]/page.tsx */}
+
+<TabsContent value="reviews">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+    <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
+      Manage Reviews
+    </h2>
+    
+    {reviews.length === 0 ? (
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        No reviews yet for this property.
+      </div>
+    ) : (
+      <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+        {/* Mobile-optimized review cards for small screens */}
+        <div className="md:hidden space-y-4">
+          {reviews.map((review) => (
+            <div 
+              key={review._id} 
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <div className="flex items-center">
+                    <div className="font-medium text-gray-900 dark:text-white mr-2">
+                      {review.name}
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      review.status === 'approved' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                        : review.status === 'rejected'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}>
+                      {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {review.email}
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white mr-1">
+                    {review.rating}
+                  </span>
+                  <span className="text-yellow-400">★</span>
+                </div>
+              </div>
               
-              {reviews.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No reviews yet for this property.
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Reviewer
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Rating
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Comment
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Date
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                      {reviews.map((review) => (
-                        <tr key={review._id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {review.name}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {review.email}
-                              </div>
-                              {review.isVerifiedStay && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                  Verified Stay
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white mr-1">
-                                {review.rating}
-                              </span>
-                              <span className="text-yellow-400">★</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                              {review.comment}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              review.status === 'approved' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                : review.status === 'rejected'
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            }`}>
-                              {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
-                              {review.status !== 'approved' && (
-                                <button
-                                  onClick={() => handleReviewStatusUpdate(review._id, 'approved')}
-                                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                  title="Approve"
-                                >
-                                  <Check className="h-5 w-5" />
-                                </button>
-                              )}
-                              {review.status !== 'rejected' && (
-                                <button
-                                  onClick={() => handleReviewStatusUpdate(review._id, 'rejected')}
-                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                  title="Reject"
-                                >
-                                  <X className="h-5 w-5" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleReviewDelete(review._id)}
-                                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
-                                title="Delete"
-                              >
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              {review.isVerifiedStay && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mb-2">
+                  Verified Stay
+                </span>
               )}
+              
+              <div className="text-sm text-gray-900 dark:text-white mb-3 mt-2">
+                {review.comment}
+              </div>
+              
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                {new Date(review.createdAt).toLocaleDateString()}
+              </div>
+              
+              <div className="flex justify-end space-x-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                {review.status !== 'approved' && (
+                  <button
+                    onClick={() => handleReviewStatusUpdate(review._id, 'approved')}
+                    className="text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs"
+                    title="Approve"
+                  >
+                    Approve
+                  </button>
+                )}
+                {review.status !== 'rejected' && (
+                  <button
+                    onClick={() => handleReviewStatusUpdate(review._id, 'rejected')}
+                    className="text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs"
+                    title="Reject"
+                  >
+                    Reject
+                  </button>
+                )}
+                <button
+                  onClick={() => handleReviewDelete(review._id)}
+                  className="text-white bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+                  title="Delete"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </TabsContent>
+          ))}
+        </div>
+        
+        {/* Desktop table view for larger screens */}
+        <div className="hidden md:block">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Reviewer
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Rating
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Comment
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Date
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              {reviews.map((review) => (
+                <tr key={review._id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {review.name}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {review.email}
+                      </div>
+                      {review.isVerifiedStay && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          Verified Stay
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white mr-1">
+                        {review.rating}
+                      </span>
+                      <span className="text-yellow-400">★</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">
+                      {review.comment}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      review.status === 'approved' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                        : review.status === 'rejected'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}>
+                      {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      {review.status !== 'approved' && (
+                        <button
+                          onClick={() => handleReviewStatusUpdate(review._id, 'approved')}
+                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                          title="Approve"
+                        >
+                          <Check className="h-5 w-5" />
+                        </button>
+                      )}
+                      {review.status !== 'rejected' && (
+                        <button
+                          onClick={() => handleReviewStatusUpdate(review._id, 'rejected')}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          title="Reject"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleReviewDelete(review._id)}
+                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                        title="Delete"
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+  </div>
+</TabsContent>
 
           <TabsContent value="bookings">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
