@@ -68,10 +68,10 @@ const BackgroundImage: React.FC<BackgroundImageProps> = ({ currentImage, childre
 }
 
 const images = [
-  'property1/3.jpg',
-  'property2/1.jpg',
-  'property2/4.jpg',
-  'property1/1.jpg'
+  'property1/3.webp',
+  'property2/1.webp',
+  'property2/4.webp',
+  'property1/1.webp'
 ]
 
 interface NavItemProps {
