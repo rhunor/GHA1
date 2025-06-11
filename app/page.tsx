@@ -1,3 +1,4 @@
+
 "use client"
 import React, { useState, useEffect } from 'react'
 import { Sun, Moon, Instagram, Menu, X, Building, MapPin, Phone } from 'lucide-react'
@@ -91,24 +92,22 @@ const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
 )
 
 // ContactInfo component for address and phone
-
 const ContactInfo = () => (
-  <address className="not-italic text-sm text-white flex flex-col items-center md:flex-row md:items-center md:space-x-4">
+  <address className="not-italic text-xs sm:text-sm text-white flex flex-col items-center sm:flex-row sm:items-center sm:space-x-4">
     <div className="flex items-center space-x-2 px-2 py-1">
-      <MapPin className="h-4 w-4 shrink-0" />
-      <span>G1/G2, Shonny Highway, Shonibate Estate, Maryland, Lagos, </span>
+      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+      <span className="text-center sm:text-left">G1/G2, Shonny Highway, Shonibate Estate, Maryland, Lagos</span>
     </div>
     <a
       href="tel:+2349045165367"
       className="flex items-center space-x-2 px-2 py-1 hover:text-primary/80 transition-colors"
       aria-label="Call us at +2349045165367"
     >
-      <Phone className="h-4 w-4 shrink-0" />
+      <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
       <span>+2349045165367</span>
     </a>
   </address>
 )
-
 
 // HeroContent component to avoid prop drilling
 const HeroContent = () => (
@@ -205,13 +204,13 @@ export default function HomePage() {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
       {/* Top Bar with Contact Info */}
-      <div className="fixed top-0 left-0 z-40 w-full bg-black/70 backdrop-blur-md">
-        <div className="container mx-auto py-2 px-4">
+      <div className="fixed top-0 left-0 z-40 w-full bg-black/70 backdrop-blur-md pt-[env(safe-area-inset-top)]">
+        <div className="container mx-auto py-1 sm:py-2 px-4 flex justify-center">
           <ContactInfo />
         </div>
       </div>
 
-      <nav className="absolute top-12 z-30 w-full">
+      <nav className="absolute top-[calc(2rem+env(safe-area-inset-top))] sm:top-[calc(2.5rem+env(safe-area-inset-top))] z-30 w-full">
         <div className="container mx-auto flex items-center justify-between p-0">
           <Link href="/">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
