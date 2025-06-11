@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { Sun, Moon, Instagram,  Menu, X, Building } from 'lucide-react'
+import { Sun, Moon, Instagram, Menu, X, Building, MapPin, Phone } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -89,6 +89,26 @@ const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
     {children}
   </a>
 )
+
+// ContactInfo component for address and phone
+
+const ContactInfo = () => (
+  <address className="not-italic text-sm text-white flex flex-col items-center md:flex-row md:items-center md:space-x-4">
+    <div className="flex items-center space-x-2 px-2 py-1">
+      <MapPin className="h-4 w-4 shrink-0" />
+      <span>G1/G2, Shonny Highway, Shonibate Estate, Maryland, Lagos, </span>
+    </div>
+    <a
+      href="tel:+2349045165367"
+      className="flex items-center space-x-2 px-2 py-1 hover:text-primary/80 transition-colors"
+      aria-label="Call us at +2349045165367"
+    >
+      <Phone className="h-4 w-4 shrink-0" />
+      <span>+2349045165367</span>
+    </a>
+  </address>
+)
+
 
 // HeroContent component to avoid prop drilling
 const HeroContent = () => (
@@ -184,13 +204,20 @@ export default function HomePage() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
-      <nav className="absolute top-0 z-30 w-full">
+      {/* Top Bar with Contact Info */}
+      <div className="fixed top-0 left-0 z-40 w-full bg-black/70 backdrop-blur-md">
+        <div className="container mx-auto py-2 px-4">
+          <ContactInfo />
+        </div>
+      </div>
+
+      <nav className="absolute top-12 z-30 w-full">
         <div className="container mx-auto flex items-center justify-between p-0">
           <Link href="/">
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Image
-              width={200}
-              height={200}
+                width={200}
+                height={200}
                 src="/logo.png"
                 alt="Gifted Homes and Apartments"
                 className="h-full w-auto object-contain"
@@ -214,8 +241,7 @@ export default function HomePage() {
             <div className="hidden md:flex items-center space-x-8">
               <NavItem href="/about">About</NavItem> 
               <NavItem href="/properties">Properties</NavItem>
-              <NavItem href="/contactus">contact us</NavItem>
-              
+              <NavItem href="/contactus">Contact Us</NavItem>
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="rounded-full p-2 hover:bg-white/20 text-white"
@@ -241,8 +267,8 @@ export default function HomePage() {
               <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
                 <NavItem href="/about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
                 <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
-                <NavItem href="/contactus">contact us</NavItem>
-                
+                <NavItem href="/contactus" onClick={() => setIsMenuOpen(false)}>Contact Us</NavItem>
+                <ContactInfo />
                 <button
                   onClick={() => setDarkMode(!darkMode)}
                   className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white"
@@ -281,8 +307,8 @@ export default function HomePage() {
             <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
               <Link href="/">
                 <Image
-                width={200}
-                height={200}
+                  width={200}
+                  height={200}
                   src="/logo.png"
                   alt="Gifted Homes and Apartments"
                   className="h-full w-auto object-contain"
@@ -291,12 +317,6 @@ export default function HomePage() {
             </div>
             
             <div className="flex space-x-6">
-              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Twitter className="h-6 w-6" />
-              </a> */}
               <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
                 <Instagram className="h-6 w-6" />
               </a>
@@ -304,19 +324,19 @@ export default function HomePage() {
                 <AiFillTikTok className="h-6 w-6" />
               </a>
               <a 
-  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-  target="_blank" 
-  rel="noopener noreferrer" 
-  className="text-gray-600 hover:text-primary dark:text-gray-400"
->
-  <BsWhatsapp className="h-6 w-6" />
-</a>
-            <a 
-              href="mailto:Horizon2haus@gmail.com" 
-              className="text-gray-600 hover:text-primary dark:text-gray-400"
-            >
-              <MdEmail className="h-6 w-6" />
-            </a>
+                href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <BsWhatsapp className="h-6 w-6" />
+              </a>
+              <a 
+                href="mailto:Horizon2haus@gmail.com" 
+                className="text-gray-600 hover:text-primary dark:text-gray-400"
+              >
+                <MdEmail className="h-6 w-6" />
+              </a>
             </div>
             
             <div className="text-sm text-center text-gray-600 dark:text-gray-400">

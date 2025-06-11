@@ -276,7 +276,7 @@ export default function AboutPage() {
                 <Image
                 width={600}
                 height={600}
-                  src="property1/3.jpg"
+                  src="property1/3.webp"
                   alt="Luxury Apartment Interior"
                   className="object-cover w-full h-full"
                 />
