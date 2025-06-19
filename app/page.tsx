@@ -96,7 +96,7 @@ const ContactInfo = () => (
   <address className="not-italic text-xs sm:text-sm text-white flex flex-col items-center sm:flex-row sm:items-center sm:space-x-4">
     <div className="flex items-center space-x-2 px-2 py-1">
       <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-      <span className="text-center sm:text-left">G1/G2, Shonny Highway, Shonibate Estate, Maryland, Lagos</span>
+      <span className="text-center sm:text-left">G1/G2, Shonny Highway, Shonibare Estate, Maryland, Lagos</span>
     </div>
     <a
       href="tel:+2349045165367"
