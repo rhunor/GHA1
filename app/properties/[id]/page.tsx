@@ -1,18 +1,19 @@
 // app/properties/[id]/page.tsx
 "use client"
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard, Calendar } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bed, Bath, Home, ArrowLeft, X, CreditCard, Calendar, Maximize, MapPin, Check, Clock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { Instagram } from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
-import { MdEmail } from 'react-icons/md'
-import { AiFillTikTok } from "react-icons/ai"
 import { generateReference, extractPrice, calculateTotalAmount } from '@/lib/paystackService'
-import Image from 'next/image'
 import { PaystackConfig } from '@/types/paystack';
 import PropertyReviews from '@/components/PropertyReviews';
+import SiteHeader from '@/components/site/SiteHeader'
+import SiteFooter from '@/components/site/SiteFooter'
+import { Reveal, Eyebrow } from '@/components/site/Reveal'
+import { cn } from '@/lib/utils'
+import { sized, srcSetFor } from '@/lib/images'
 
 interface PropertyData {
   _id?: string;
@@ -82,7 +83,7 @@ export default function PropertyDetailsPage() {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const response = await fetch(`/api/properties/${params.id}`);
+        const response = await fetch(`/api/properties/${params.id}?public=1`);
         
         if (response.ok) {
           const data = await response.json();
@@ -229,10 +230,58 @@ export default function PropertyDetailsPage() {
 
   
 
+  // Keep the active thumbnail centred in its strip (without scrolling the page)
+  const thumbsRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const strip = thumbsRef.current
+    const thumb = strip?.children[currentImageIndex] as HTMLElement | undefined
+    if (!strip || !thumb) return
+    strip.scrollTo({ left: thumb.offsetLeft - strip.clientWidth / 2 + thumb.clientWidth / 2, behavior: 'smooth' })
+  }, [currentImageIndex])
+
+  // Arrow keys move through the gallery; Escape closes the booking modal
+  useEffect(() => {
+    if (!property) return
+    const count = property.images.length
+    const onKey = (e: KeyboardEvent) => {
+      if (isBookingModalOpen) {
+        if (e.key === 'Escape') {
+          setIsBookingModalOpen(false)
+          setActiveOption(null)
+          setPaymentSuccess(null)
+        }
+        return
+      }
+      const tag = (e.target as HTMLElement | null)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      if (e.key === 'ArrowRight') {
+        setIsAutoPlaying(false)
+        setCurrentImageIndex((prev) => (prev + 1) % count)
+      } else if (e.key === 'ArrowLeft') {
+        setIsAutoPlaying(false)
+        setCurrentImageIndex((prev) => (prev - 1 + count) % count)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [property, isBookingModalOpen])
+
+  useEffect(() => {
+    document.body.style.overflow = isBookingModalOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isBookingModalOpen])
+
   if (fetchLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen">
+        <SiteHeader />
+        <div className="container mx-auto px-4 pt-28">
+          <div className="aspect-[16/9] w-full animate-pulse rounded-3xl bg-fg/5" />
+          <div className="mt-10 h-12 w-2/3 animate-pulse rounded-full bg-fg/5" />
+          <div className="mt-4 h-5 w-1/3 animate-pulse rounded-full bg-fg/5" />
+        </div>
       </div>
     );
   }
@@ -457,166 +506,196 @@ export default function PropertyDetailsPage() {
     window.open(airbnbUrl, '_blank');
   }
   
+  const bookable = property.isBookable !== false
+  const nightly = extractPrice(property.price)
+  const nights = formData.checkIn && formData.checkOut && !dateError
+    ? Math.max(1, Math.ceil((new Date(formData.checkOut).getTime() - new Date(formData.checkIn).getTime()) / 86400000))
+    : 0
+  const total = nights ? calculateTotalAmount(nightly, formData.checkIn, formData.checkOut) : 0
+
+  const closeModal = () => {
+    setIsBookingModalOpen(false)
+    setActiveOption(null)
+    setPaymentSuccess(null)
+  }
+
+  const specs = [
+    { icon: Bed, value: property.specifications.bedrooms, label: 'Bedrooms' },
+    { icon: Bath, value: property.specifications.bathrooms, label: 'Bathrooms' },
+    { icon: Maximize, value: property.specifications.size, label: 'Floor area' },
+    { icon: Home, value: property.specifications.type, label: 'Type' },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-0 md:pt-0 lg:pt-0">
-      <Link href="/">
-        <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-          <Image
-          width={200}
-          height={200}
-            src="/logo.png"
-            alt="Gifted Homes and Apartments"
-            className="h-full w-auto object-contain"
-          />
-        </div>
-      </Link>
-      
-      <Link 
-        href="/properties"
-        className="fixed top-20 left-4 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
-      >
-        <ArrowLeft className="h-6 w-6" />
-      </Link>
+    <div className="min-h-screen">
+      <SiteHeader />
 
-      <div className="relative h-[50vh] md:h-[70vh] bg-black">
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={currentImageIndex}
-            src={property.images[currentImageIndex]}
-            alt={`${property.title} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          />
-        </AnimatePresence>
+      <main className="pt-24 md:pt-28">
+        <div className="container mx-auto px-4">
+          <Link
+            href="/properties"
+            className="group mb-6 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-fg"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            All properties
+          </Link>
 
-        <button
-          onClick={prevImage}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
+          {/* Gallery */}
+          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-ink md:aspect-[16/8]">
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.img
+                key={currentImageIndex}
+                src={sized(property.images[currentImageIndex], 1920)}
+                srcSet={srcSetFor(property.images[currentImageIndex])}
+                sizes="100vw"
+                alt={`${property.title} - Image ${currentImageIndex + 1}`}
+                className="absolute inset-0 h-full w-full cursor-grab object-cover active:cursor-grabbing"
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -60) nextImage()
+                  else if (info.offset.x > 60) prevImage()
+                }}
+              />
+            </AnimatePresence>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-        <div className="absolute bottom-4 right-4 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
-          {currentImageIndex + 1} / {property.images.length}
-        </div>
-      </div>
+            <button
+              onClick={prevImage}
+              aria-label="Previous photo"
+              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={nextImage}
+              aria-label="Next photo"
+              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-              {property.title}
-            </h1>
-            <div className="flex flex-col items-end">
-              <span className="text-2xl font-semibold text-primary mb-2">
-                {property.price}
-              </span>
-              {/* Additional Book Now button under the price */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsBookingModalOpen(true)}
-                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
-                disabled={!property.isBookable}
-              >
-                {property.isBookable === false ? 'Not Available' : 'Book Now'}
-              </motion.button>
+            <div className="absolute bottom-4 right-4 rounded-full bg-black/40 px-3 py-1 text-sm tabular-nums text-white backdrop-blur-md">
+              {String(currentImageIndex + 1).padStart(2, '0')} / {String(property.images.length).padStart(2, '0')}
             </div>
           </div>
 
-          <div className="mb-8">
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-              {property.location}
-            </p>
+          <div ref={thumbsRef} className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
+            {property.images.map((src, i) => (
+              <button
+                key={src}
+                onClick={() => {
+                  setIsAutoPlaying(false)
+                  setCurrentImageIndex(i)
+                }}
+                aria-label={`Show photo ${i + 1}`}
+                aria-current={i === currentImageIndex}
+                className={cn(
+                  'relative h-16 w-24 shrink-0 overflow-hidden rounded-xl transition-all duration-300 md:h-20 md:w-28',
+                  i === currentImageIndex ? 'opacity-100 ring-2 ring-clay ring-offset-2 ring-offset-canvas' : 'opacity-55 hover:opacity-100'
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sized(src, 480)} alt="" loading="lazy" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="flex items-center gap-2">
-                <Bed className="h-5 w-5 text-primary" />
-                <span className="text-gray-600 dark:text-gray-300">
-                  {property.specifications.bedrooms} Bedrooms
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Bath className="h-5 w-5 text-primary" />
-                <span className="text-gray-600 dark:text-gray-300">
-                  {property.specifications.bathrooms} Bathrooms
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Home className="h-5 w-5 text-primary" />
-                <span className="text-gray-600 dark:text-gray-300">
-                  {property.specifications.size}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 dark:text-gray-300">
-                  {property.specifications.type}
-                </span>
-              </div>
-            </div>
+          {/* Details + booking card */}
+          <div className="mt-12 grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <Eyebrow>
+                <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{property.location}</span>
+              </Eyebrow>
+              <h1 className="display mt-5 text-3xl sm:text-4xl md:text-5xl">{property.title}</h1>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                Description
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                {property.description}
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                Features
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {property.features.map((feature, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center gap-2 text-gray-600 dark:text-gray-300"
-                  >
-                    <div className="h-2 w-2 bg-primary rounded-full" />
-                    {feature}
+              <dl className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-4">
+                {specs.map(({ icon: Icon, value, label }) => (
+                  <div key={label} className="flex flex-col bg-paper p-5">
+                    <dt className="order-2 mt-1 text-xs uppercase tracking-[0.14em] text-muted">{label}</dt>
+                    <dd className="flex items-center gap-2 font-marcellus text-2xl capitalize">
+                      <Icon className="h-4 w-4 text-clay" /> {value}
+                    </dd>
                   </div>
                 ))}
-              </div>
+              </dl>
+
+              <Reveal className="mt-14">
+                <h2 className="display text-3xl">About this home</h2>
+                <p className="mt-5 whitespace-pre-line text-lg leading-relaxed text-muted">
+                  {property.description}
+                </p>
+              </Reveal>
+
+              <Reveal className="mt-14">
+                <h2 className="display text-3xl">What this place offers</h2>
+                <ul className="mt-6 grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+                  {property.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-3 border-b border-line py-4">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-clay/10 text-clay">
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="first-letter:uppercase">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
             </div>
+
+            <aside className="hidden lg:col-span-5 lg:block">
+              <div className="card sticky top-28 p-8 shadow-[0_30px_80px_-40px_rgb(var(--c-fg)/0.35)]">
+                <p className="text-sm text-muted">From</p>
+                <p className="display mt-1 text-4xl">{property.price}</p>
+                <button
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="btn-clay mt-8 w-full py-4 text-base"
+                  disabled={!bookable}
+                >
+                  {bookable ? <><Calendar className="h-5 w-5" /> Book Now</> : 'Currently Unavailable'}
+                </button>
+                <button onClick={openWhatsApp} className="btn-ghost mt-3 w-full py-4">
+                  <BsWhatsapp className="h-4 w-4 text-[#1F8F55]" /> Ask on WhatsApp
+                </button>
+                <ul className="mt-8 space-y-3 border-t border-line pt-6 text-sm text-muted">
+                  <li className="flex items-center gap-3"><Clock className="h-4 w-4 text-clay" /> Check-in 3:00 PM · Check-out 11:00 AM</li>
+                  <li className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-clay" /> Secure payment with Paystack</li>
+                  <li className="flex items-center gap-3"><Home className="h-4 w-4 text-clay" /> Also bookable on Airbnb</li>
+                </ul>
+              </div>
+            </aside>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsBookingModalOpen(true)}
-            className="w-full md:w-auto px-8 py-4 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors"
-            disabled={!property.isBookable}
-          >
-            {property.isBookable === false ? (
-              <>
-                <span className="inline-block mr-2">🚫</span> 
-                Currently Unavailable
-              </>
-            ) : (
-              <>
-                <Calendar className="inline-block mr-2 h-5 w-5" /> 
-                Book Now
-              </>
-            )}
-          </motion.button>
-          
           {/* Reviews section */}
-          <div className="mt-16">
+          <div className="mt-20 pb-24">
             <PropertyReviews propertyId={property._id || property.id?.toString() || ''} />
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Mobile booking bar */}
+      {!isBookingModalOpen && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/90 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl lg:hidden">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-marcellus text-xl leading-tight">{property.price}</p>
+              <p className="max-w-[45vw] truncate text-xs text-muted">{property.title}</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={openWhatsApp} aria-label="Ask on WhatsApp" className="grid h-12 w-12 place-items-center rounded-full border border-line">
+                <BsWhatsapp className="h-5 w-5 text-[#1F8F55]" />
+              </button>
+              <button onClick={() => setIsBookingModalOpen(true)} disabled={!bookable} className="btn-clay px-6">
+                {bookable ? 'Book Now' : 'Unavailable'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {isBookingModalOpen && (
@@ -624,206 +703,164 @@ export default function PropertyDetailsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={closeModal}
+            className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/60 backdrop-blur-sm sm:items-center sm:p-4"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="booking-title"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-paper shadow-2xl sm:rounded-3xl"
             >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Book Your Stay</h2>
-                  <button 
-                    onClick={() => {
-                      setIsBookingModalOpen(false)
-                      setActiveOption(null)
-                      setPaymentSuccess(null)
-                    }}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              <div className="p-6 md:p-8">
+                <div className="mb-6 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="eyebrow line-clamp-1">{property.title}</p>
+                    <h2 id="booking-title" className="display mt-2 text-3xl">Book Your Stay</h2>
+                  </div>
+                  <button
+                    onClick={closeModal}
+                    aria-label="Close"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-fg"
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
 
                 {paymentSuccess ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                  <div className="py-8 text-center">
+                    <div className="relative mx-auto mb-6 grid h-20 w-20 place-items-center">
+                      <span className="absolute inset-0 animate-ring-out rounded-full border-2 border-[#1F8F55]" />
+                      <span className="grid h-16 w-16 place-items-center rounded-full bg-[#1F8F55]/10">
+                        <Check className="h-8 w-8 text-[#1F8F55]" />
+                      </span>
                     </div>
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Booking Successful!</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-2">
+                    <h3 className="display mb-2 text-3xl">Booking Successful!</h3>
+                    <p className="mb-2 text-muted">
                       Thank you for booking with Gifted Homes and Apartments.
                     </p>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Your reference number: <span className="font-semibold">{paymentSuccess.reference}</span>
+                    <p className="mb-8 text-muted">
+                      Your reference number: <span className="font-semibold text-fg">{paymentSuccess.reference}</span>
                     </p>
-                    <button
-                      onClick={() => {
-                        setIsBookingModalOpen(false)
-                        setPaymentSuccess(null)
-                      }}
-                      className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                    >
+                    <button onClick={closeModal} className="btn-clay">
                       Done
                     </button>
                   </div>
                 ) : !activeOption ? (
-                  <div className="space-y-6">
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Choose your preferred booking method for:
-                      <span className="block font-bold text-lg text-primary mt-1">{property.title}</span>
-                      <span className="block font-bold text-gray-900 dark:text-white mt-1">{property.price}</span>
+                  <div>
+                    <p className="mb-6 text-muted">
+                      Choose your preferred booking method · <span className="font-medium text-fg">{property.price}</span>
                     </p>
 
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-                      <button
-                        onClick={() => setActiveOption('whatsapp')}
-                        className="flex flex-col items-center justify-center p-6 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <BsWhatsapp className="h-10 w-10 text-green-500 mb-3" />
-                        <span className="font-medium text-gray-900 dark:text-white">WhatsApp</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">Chat with us directly</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveOption('paystack')}
-                        className="flex flex-col items-center justify-center p-6 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <CreditCard className="h-10 w-10 text-blue-500 mb-3" />
-                        <span className="font-medium text-gray-900 dark:text-white">Pay with Paystack</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">Secure online payment</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveOption('airbnb')}
-                        className="flex flex-col items-center justify-center p-6 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <Home className="h-10 w-10 text-red-500 mb-3" />
-                        <span className="font-medium text-gray-900 dark:text-white">Airbnb</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">Book through Airbnb</span>
-                      </button>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                      {[
+                        { key: 'whatsapp', icon: BsWhatsapp, color: 'text-[#1F8F55]', title: 'WhatsApp', sub: 'Chat with us directly' },
+                        { key: 'paystack', icon: CreditCard, color: 'text-clay', title: 'Pay with Paystack', sub: 'Secure online payment' },
+                        { key: 'airbnb', icon: Home, color: 'text-[#E0565B]', title: 'Airbnb', sub: 'Book through Airbnb' },
+                      ].map((option) => (
+                        <button
+                          key={option.key}
+                          onClick={() => setActiveOption(option.key)}
+                          className="group flex items-center gap-4 rounded-2xl border border-line p-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-fg/30 md:flex-col md:items-start md:p-6"
+                        >
+                          <option.icon className={cn('h-8 w-8', option.color)} />
+                          <span>
+                            <span className="block font-medium">{option.title}</span>
+                            <span className="mt-0.5 block text-sm text-muted">{option.sub}</span>
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ) : activeOption === 'paystack' ? (
                   <form onSubmit={handlePaystackCheckout} className="space-y-6">
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    <p className="text-muted">
                       Please provide your details to complete your booking.
                     </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        />
+                        <label htmlFor="bk-name" className="field-label">Full Name</label>
+                        <input id="bk-name" type="text" name="name" value={formData.name} onChange={handleInputChange} required autoComplete="name" className="field" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        />
+                        <label htmlFor="bk-email" className="field-label">Email</label>
+                        <input id="bk-email" type="email" name="email" value={formData.email} onChange={handleInputChange} required autoComplete="email" className="field" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        />
+                        <label htmlFor="bk-phone" className="field-label">Phone Number</label>
+                        <input id="bk-phone" type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required autoComplete="tel" className="field" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Guests</label>
-                        <select
-                          name="guests"
-                          value={formData.guests}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
-                        >
+                        <label htmlFor="bk-guests" className="field-label">Number of Guests</label>
+                        <select id="bk-guests" name="guests" value={formData.guests} onChange={handleInputChange} className="field">
                           {[1, 2, 3, 4, 5, 6].map(num => (
                             <option key={num} value={num}>{num} {num === 1 ? 'guest' : 'guests'}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Check-in Date</label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            name="checkIn"
-                            value={formData.checkIn}
-                            onChange={handleInputChange}
-                            required
-                            min={getTomorrow()}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
-                              dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
-                            }`}
-                          />
-                          <Calendar className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Only available dates can be selected</p>
+                        <label htmlFor="bk-in" className="field-label">Check-in Date</label>
+                        <input
+                          id="bk-in"
+                          type="date"
+                          name="checkIn"
+                          value={formData.checkIn}
+                          onChange={handleInputChange}
+                          required
+                          min={getTomorrow()}
+                          className={cn('field', dateError && '!border-red-500 focus:!ring-red-500/20')}
+                        />
+                        <p className="mt-1 text-xs text-muted">Only available dates can be selected</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Check-out Date</label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            name="checkOut"
-                            value={formData.checkOut}
-                            onChange={handleInputChange}
-                            required
-                            min={formData.checkIn || getTomorrow()}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
-                              dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
-                            }`}
-                            disabled={!formData.checkIn}
-                          />
-                          <Calendar className="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                        </div>
+                        <label htmlFor="bk-out" className="field-label">Check-out Date</label>
+                        <input
+                          id="bk-out"
+                          type="date"
+                          name="checkOut"
+                          value={formData.checkOut}
+                          onChange={handleInputChange}
+                          required
+                          min={formData.checkIn || getTomorrow()}
+                          className={cn('field', dateError && '!border-red-500 focus:!ring-red-500/20')}
+                          disabled={!formData.checkIn}
+                        />
                       </div>
-                      
+
                       {dateError && (
-                        <div className="col-span-2 text-red-500 text-sm mt-1">
+                        <div role="alert" className="text-sm text-red-600 dark:text-red-400 md:col-span-2">
                           {dateError}
                         </div>
                       )}
                     </div>
 
-                    <div className="mt-8 flex justify-end space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => setActiveOption(null)}
-                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                    {nights > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-between rounded-2xl bg-linen px-5 py-4"
                       >
+                        <span className="text-sm text-muted">
+                          ₦{nightly.toLocaleString('en-NG')} × {nights} {nights === 1 ? 'night' : 'nights'}
+                        </span>
+                        <span className="font-marcellus text-2xl">₦{total.toLocaleString('en-NG')}</span>
+                      </motion.div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-2">
+                      <button type="button" onClick={() => setActiveOption(null)} className="btn-ghost">
                         Back
                       </button>
-                      <button
-                        type="submit"
-                        disabled={isLoading || !!dateError}
-                        className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center ${(isLoading || !!dateError) ? 'opacity-70 cursor-not-allowed' : ''}`}
-                      >
+                      <button type="submit" disabled={isLoading || !!dateError} className="btn-clay">
                         {isLoading ? (
                           <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                             Processing...
                           </>
                         ) : (
@@ -833,45 +870,33 @@ export default function PropertyDetailsPage() {
                     </div>
                   </form>
                 ) : activeOption === 'whatsapp' ? (
-                  <div className="text-center py-8">
-                    <BsWhatsapp className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via WhatsApp</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  <div className="py-8 text-center">
+                    <BsWhatsapp className="mx-auto mb-5 h-14 w-14 text-[#1F8F55]" />
+                    <h3 className="display mb-2 text-3xl">Book via WhatsApp</h3>
+                    <p className="mb-8 text-muted">
                       Our team is ready to assist you with your booking for {property.title}.
                     </p>
-                    <div className="flex justify-center space-x-4">
-                      <button
-                        onClick={() => setActiveOption(null)}
-                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                      >
+                    <div className="flex justify-center gap-3">
+                      <button onClick={() => setActiveOption(null)} className="btn-ghost">
                         Back
                       </button>
-                      <button
-                        onClick={openWhatsApp}
-                        className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                      >
+                      <button onClick={openWhatsApp} className="btn bg-[#1F8F55] text-white hover:brightness-110">
                         Chat on WhatsApp
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Home className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Book via Airbnb</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  <div className="py-8 text-center">
+                    <Home className="mx-auto mb-5 h-14 w-14 text-[#E0565B]" />
+                    <h3 className="display mb-2 text-3xl">Book via Airbnb</h3>
+                    <p className="mb-8 text-muted">
                       Continue your booking on the Airbnb platform.
                     </p>
-                    <div className="flex justify-center space-x-4">
-                      <button
-                        onClick={() => setActiveOption(null)}
-                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                      >
+                    <div className="flex justify-center gap-3">
+                      <button onClick={() => setActiveOption(null)} className="btn-ghost">
                         Back
                       </button>
-                      <button
-                        onClick={openAirbnb}
-                        className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                      >
+                      <button onClick={openAirbnb} className="btn bg-[#E0565B] text-white hover:brightness-110">
                         Continue to Airbnb
                       </button>
                     </div>
@@ -883,50 +908,9 @@ export default function PropertyDetailsPage() {
         )}
       </AnimatePresence>
 
-      <footer className="bg-white py-12 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <Link href="/">
-                <Image
-                width={200}
-                height={200}
-                  src="/logo.png"
-                  alt="Gifted Homes and Apartments"
-                  className="h-full w-auto object-contain"
-                />
-              </Link>
-            </div>
-            
-            <div className="flex space-x-6">
-              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <AiFillTikTok className="h-6 w-6" />
-              </a>
-              <a 
-                href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <BsWhatsapp className="h-6 w-6" />
-              </a>
-              <a 
-                href="mailto:Horizon2haus@gmail.com" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <MdEmail className="h-6 w-6" />
-              </a>
-            </div>
-            
-            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-              © 2025 Gifted Homes and Apartments. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
+      {/* Room for the mobile booking bar so it never covers the footer */}
+      <div className="h-24 bg-night lg:hidden" />
     </div>
   );
 }

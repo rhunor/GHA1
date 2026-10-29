@@ -17,6 +17,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
    const id = (await params).id; 
+   const cacheInit = request.nextUrl.searchParams.get('public') === '1'
+     ? { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' } }
+     : undefined;
 
   try {
     // Check if it's a numeric ID (from static data)
@@ -44,7 +47,7 @@ export async function GET(
       const property = await Property.findById(id);
       
       if (property) {
-        return NextResponse.json({ property });
+        return NextResponse.json({ property }, cacheInit);
       }
     } catch (err) {
       console.error("MongoDB query error:", err);

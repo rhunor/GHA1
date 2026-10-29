@@ -2,13 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Palette pulled from the apartments themselves: greige walls (canvas/linen),
+ * the logo's navy (fg/ink), cognac leather (clay) and warm brass lighting (brass).
+ */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --c-canvas: 246 242 236;
+  --c-paper: 255 253 250;
+  --c-linen: 236 228 216;
+  --c-fg: 30 42 59;
+  --c-muted: 92 100 112;
+  --c-line: 221 212 199;
+  --c-clay: 154 90 49;
+  --c-on-clay: 255 255 255;
+  --c-brass: 201 164 106;
+  --c-night: 30 42 59;
+  --c-primary: 154 90 49;
+  color-scheme: light;
 }
 
-body {
-  background-color: white;
+.dark {
+  --c-canvas: 16 22 30;
+  --c-paper: 25 33 43;
+  --c-linen: 21 28 37;
+  --c-fg: 238 232 222;
+  --c-muted: 163 170 180;
+  --c-line: 48 58 72;
+  --c-clay: 208 141 94;
+  --c-on-clay: 16 22 30;
+  --c-brass: 201 164 106;
+  --c-night: 10 14 20;
+  --c-primary: 185 115 63;
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas text-fg;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(var(--c-clay) / 0.25);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-clay));
+    outline-offset: 3px;
+  }
+
+  /* Date inputs: make the native calendar icon follow the theme */
+  .dark input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-outfit text-[0.7rem] font-medium uppercase tracking-label text-clay;
+  }
+
+  .display {
+    @apply font-marcellus leading-[1.05] tracking-[-0.01em];
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-line bg-paper px-4 py-3 text-fg placeholder:text-muted/70
+      transition-colors duration-200 focus:border-clay focus:outline-none focus:ring-2 focus:ring-clay/20;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-muted;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium
+      transition-all duration-300 ease-silk disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-clay {
+    @apply btn bg-clay text-on-clay hover:brightness-110 hover:shadow-[0_10px_30px_-10px_rgb(var(--c-clay)/0.7)];
+  }
+
+  .btn-ghost {
+    @apply btn border border-line text-fg hover:border-fg/40 hover:bg-fg/5;
+  }
+
+  .btn-glass {
+    @apply btn border border-white/30 bg-white/10 text-white backdrop-blur-md hover:bg-white/20;
+  }
+
+  .card {
+    @apply rounded-3xl border border-line/70 bg-paper;
+  }
+}
+
+@layer utilities {
+  /* Underline that draws in from the left on hover */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-draw:hover,
+  .link-draw[aria-current='page'] {
+    background-size: 100% 1px;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The home intro only plays on the first visit of a session (flag set in the theme script) */
+html[data-intro='seen'] .intro-loader {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

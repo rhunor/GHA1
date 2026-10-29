@@ -1,349 +1,474 @@
-
 "use client"
-import React, { useState, useEffect } from 'react'
-import { Sun, Moon, Instagram, Menu, X, Building, MapPin, Phone } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import dynamic from 'next/dynamic'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { ArrowRight, ArrowUpRight, Bed, Bath, Maximize, MapPin, CreditCard, Home as HomeIcon } from 'lucide-react'
 import { BsWhatsapp } from 'react-icons/bs'
-import { MdEmail } from 'react-icons/md'
-import { AiFillTikTok } from "react-icons/ai";
-import Image from 'next/image'
+import SiteHeader from '@/components/site/SiteHeader'
+import SiteFooter from '@/components/site/SiteFooter'
+import WhatsAppButton from '@/components/site/WhatsAppButton'
+import RippleSurface, { RippleHandle } from '@/components/site/RippleSurface'
+import IntroDrop from '@/components/site/IntroDrop'
+import { Reveal, MaskText, ScrollFillText, ParallaxImage, Eyebrow } from '@/components/site/Reveal'
+import { useProperties, propertyHref } from '@/hooks/useProperties'
+import { whatsappLink } from '@/lib/site'
+import { cn } from '@/lib/utils'
+import { sized } from '@/lib/images'
 
-interface BackgroundImageProps {
-  currentImage: string;
-  children: React.ReactNode;
-}
-
-function detectIncompatibleDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  const userAgent = navigator.userAgent.toLowerCase()
-  return /android/.test(userAgent)
-}
-
-// Import WaterWave without type checking to avoid deployment issues
-const WaterWave = dynamic(
-  () => import('react-water-wave').then((mod) => mod.default),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-    ),
-  }
-)
-
-const BackgroundImage: React.FC<BackgroundImageProps> = ({ currentImage, children }) => {
-  const isIncompatibleDevice = detectIncompatibleDevice()
-
-  if (isIncompatibleDevice) {
-    return (
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(${currentImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        {children}
-      </div>
-    )
-  }
-
-  return (
-    <WaterWave
-      imageUrl={currentImage}
-      dropRadius={20}
-      perturbance={0.03}
-      resolution={512}
-      style={{
-        width: '100%',
-        height: '100%',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
-      {() => children}
-    </WaterWave>
-  )
-}
-
-const images = [
-  'property1/3.webp',
-  'property2/1.webp',
-  'property2/4.webp',
-  'property1/1.webp'
+// Rooms the hero "dips" between
+const rooms = [
+  { src: '/property1/3.webp', name: 'Ezrahaus', place: 'Lekki Phase 1' },
+  { src: '/property2/4.webp', name: 'Meadowhaus', place: 'Ikate, Lekki' },
+  { src: '/property1/1.webp', name: 'Ezrahaus', place: 'Lekki Phase 1' },
+  { src: '/property2/1.webp', name: 'Meadowhaus', place: 'Ikate, Lekki' },
 ]
 
-interface NavItemProps {
-  href: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-}
+const ROOM_DURATION = 9000
 
-const NavItem: React.FC<NavItemProps> = ({ href, children, onClick }) => (
-  <a
-    href={href}
-    onClick={onClick}
-    className="block px-4 py-2 text-sm font-medium text-white transition-colors hover:text-primary/80 md:inline-block"
-  >
-    {children}
-  </a>
-)
+const amenities = [
+  '24/7 power', 'High-speed WiFi', 'Concierge', 'Hot water', 'Swimming pool', 'Smart home',
+  'Secure parking', 'Housekeeping', 'Air conditioning', 'Treated water', 'Fully equipped kitchen',
+]
 
-// ContactInfo component for address and phone
-const ContactInfo = () => (
-  <address className="not-italic text-xs sm:text-sm text-white flex flex-col items-center sm:flex-row sm:items-center sm:space-x-4">
-    <div className="flex items-center space-x-2 px-2 py-1">
-      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-      <span className="text-center sm:text-left">G1/G2, Shonny Highway, Shonibare Estate, Maryland, Lagos</span>
-    </div>
-    <a
-      href="tel:+2349045165367"
-      className="flex items-center space-x-2 px-2 py-1 hover:text-primary/80 transition-colors"
-      aria-label="Call us at +2349045165367"
-    >
-      <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-      <span>+2349045165367</span>
-    </a>
-  </address>
-)
+const preload = (src: string) =>
+  new Promise<void>((resolve) => {
+    const img = new window.Image()
+    img.onload = img.onerror = () => resolve()
+    img.src = src
+  })
 
-// HeroContent component to avoid prop drilling
-const HeroContent = () => (
-  <div className="h-screen">
-    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-    
-    <div className="absolute inset-0 flex items-center justify-center px-4">
-      <div className="text-center text-white">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="mb-6 text-4xl font-bold md:text-6xl"
-        >
-          Find the perfect short stay apartment 
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.8 }}
-          className="mb-8 text-lg md:text-xl"
-        >
-          Luxury Apartments in Lekki
-        </motion.p>
-        <Link href="/properties">
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.8 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="rounded-sm bg-gray-300 px-5 py-2 md:px-6 md:py-3 text-base font-medium text-gray-800 transition-all hover:bg-gray-400 hover:shadow-lg"
-          >
-            View Properties
-          </motion.button>
-        </Link>
-      </div>
-    </div>
-  </div>
-)
-
-export default function HomePage() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [currentImage] = useState(images[Math.floor(Math.random() * images.length)])
-  const [loading, setLoading] = useState(true)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+function Hero() {
+  const ripple = useRef<RippleHandle>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  // Picked after mount so server and client markup match
+  const [start, setStart] = useState<number | null>(null)
+  const [index, setIndex] = useState(0)
+  const [dim, setDim] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
+  const busy = useRef(false)
+  const readyResolve = useRef<() => void>(() => {})
+  const ready = useMemo(() => new Promise<void>((resolve) => (readyResolve.current = resolve)), [])
 
   useEffect(() => {
-    setIsMounted(true)
-    const timer = setTimeout(() => setLoading(false), 2000)
-    return () => clearTimeout(timer)
+    const first = Math.floor(Math.random() * rooms.length)
+    setStart(first)
+    setIndex(first)
+    preload(sized(rooms[first].src, 1920)).then(() => readyResolve.current())
   }, [])
 
-  if (!isMounted) {
-    return null
-  }
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 160])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+  const shade = useTransform(scrollYProgress, [0, 1], [0, 0.5])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
-        <motion.div
-          className="relative"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 360, 360],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Building className="h-16 w-16 text-primary dark:text-white" />
-          <motion.div
-            className="absolute inset-0"
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Building className="h-16 w-16 text-primary/50 dark:text-white/50" />
-          </motion.div>
-        </motion.div>
-      </div>
-    )
-  }
+  const goTo = useCallback(async (next: number) => {
+    if (busy.current) return
+    busy.current = true
+    setDim(true)
+    await new Promise((r) => setTimeout(r, 380))
+    await ripple.current?.setImage(rooms[next].src)
+    setIndex(next)
+    ripple.current?.splash({ radius: 34, strength: 0.22 })
+    setDim(false)
+    busy.current = false
+  }, [])
+
+  // Auto-advance through the rooms after the intro
+  useEffect(() => {
+    if (!introDone) return
+    const timer = setTimeout(() => goTo((index + 1) % rooms.length), ROOM_DURATION)
+    return () => clearTimeout(timer)
+  }, [index, introDone, goTo])
+
+  // Warm the cache so room swaps are instant
+  useEffect(() => {
+    rooms.forEach((r) => preload(sized(r.src, 1920)))
+  }, [])
+
+  const onIntroDone = useCallback((played: boolean) => {
+    setIntroDone(true)
+    // The drop from the intro lands in the water
+    setTimeout(() => ripple.current?.splash({ radius: played ? 38 : 26, strength: played ? 0.26 : 0.14 }), played ? 80 : 900)
+  }, [])
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
-      {/* Top Bar with Contact Info */}
-      <div className="fixed top-0 left-0 z-40 w-full bg-black/70 backdrop-blur-md pt-[env(safe-area-inset-top)]">
-        <div className="container mx-auto py-1 sm:py-2 px-4 flex justify-center">
-          <ContactInfo />
-        </div>
-      </div>
+    <>
+      <IntroDrop ready={ready} onDone={onIntroDone} />
+      <section ref={sectionRef} className="relative h-[100svh] min-h-[560px] bg-ink">
+        {start !== null && (
+        <RippleSurface ref={ripple} image={rooms[start].src} perturbance={0.02} rainIntensity={0.55} className="absolute inset-0">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/70" />
+          <motion.div style={{ opacity: shade }} className="pointer-events-none absolute inset-0 bg-ink" />
+          <div
+            className={cn(
+              'pointer-events-none absolute inset-0 bg-ink transition-opacity duration-500 ease-silk',
+              dim ? 'opacity-50' : 'opacity-0'
+            )}
+          />
 
-      <nav className="absolute top-[calc(2rem+env(safe-area-inset-top))] sm:top-[calc(2.5rem+env(safe-area-inset-top))] z-30 w-full">
-        <div className="container mx-auto flex items-center justify-between p-0">
-          <Link href="/">
-            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <Image
-                width={200}
-                height={200}
-                src="/logo.png"
-                alt="Gifted Homes and Apartments"
-                className="h-full w-auto object-contain"
-              />
-            </div>
-          </Link>
-          
-          <div className="flex items-center">
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden rounded-full p-2 hover:bg-white/20"
-            >
-              {isMenuOpen ? 
-                <X className="h-6 w-6 text-white" /> : 
-                <Menu className="h-6 w-6 text-white" />
-              }
-            </button>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <NavItem href="/about">About</NavItem> 
-              <NavItem href="/properties">Properties</NavItem>
-              <NavItem href="/contactus">Contact Us</NavItem>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="rounded-full p-2 hover:bg-white/20 text-white"
-              >
-                {darkMode ? 
-                  <Sun className="h-5 w-5" /> : 
-                  <Moon className="h-5 w-5" />
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-black/70 backdrop-blur-md"
-            >
-              <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-                <NavItem href="/about" onClick={() => setIsMenuOpen(false)}>About</NavItem> 
-                <NavItem href="/properties" onClick={() => setIsMenuOpen(false)}>Properties</NavItem>
-                <NavItem href="/contactus" onClick={() => setIsMenuOpen(false)}>Contact Us</NavItem>
-                <ContactInfo />
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white"
+          <motion.div
+            style={{ y: contentY, opacity: contentOpacity }}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
+          >
+            {introDone && (
+              <div className="max-w-4xl text-center text-white">
+                <motion.p
+                  initial={{ opacity: 0, letterSpacing: '0.6em' }}
+                  animate={{ opacity: 1, letterSpacing: '0.28em' }}
+                  transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="eyebrow mb-6 !text-brass"
                 >
-                  {darkMode ? 
-                    <Sun className="h-5 w-5" /> : 
-                    <Moon className="h-5 w-5" />
-                  }
-                </button>
+                  Shortlet apartments · Lagos
+                </motion.p>
+                <MaskText
+                  as="h1"
+                  text="Find the perfect short stay apartment"
+                  animateOnMount
+                  delay={0.15}
+                  className="display text-[2.6rem] sm:text-6xl md:text-7xl lg:text-[5.5rem]"
+                />
+                <motion.p
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.8 }}
+                  className="mx-auto mt-6 max-w-md text-lg text-white/80 md:text-xl"
+                >
+                  Luxury Apartments in Lekki
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.8 }}
+                  className="pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-3"
+                >
+                  <Link href="/properties" className="btn bg-cream px-7 py-3.5 text-ink hover:bg-white">
+                    View Properties <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="btn-glass px-7 py-3.5">
+                    <BsWhatsapp className="h-4 w-4" /> Chat to book
+                  </a>
+                </motion.div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+            )}
+          </motion.div>
 
-      <main className="relative min-h-screen">
-        <div className="relative h-screen overflow-hidden">
-          <div className="absolute inset-0">
+          {/* Room switcher */}
+          {introDone && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 4 }} 
-              className="absolute inset-0"
+              transition={{ delay: 1.3, duration: 1 }}
+              className="absolute inset-x-0 bottom-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
             >
-              <BackgroundImage currentImage={currentImage}>
-                <HeroContent />
-              </BackgroundImage>
-            </motion.div>
-          </div>
-        </div>
-      </main>
+              <div className="container mx-auto flex items-end justify-between gap-6 px-4 text-white">
+                <div className="pointer-events-none hidden md:block">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <p className="text-xs uppercase tracking-label text-white/60">Now showing</p>
+                      <p className="mt-1 flex items-center gap-2 font-marcellus text-xl">
+                        {rooms[index].name}
+                        <span className="text-sm font-outfit text-white/60">· {rooms[index].place}</span>
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-      <footer className="bg-white py-12 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <Link href="/">
-                <Image
-                  width={200}
-                  height={200}
-                  src="/logo.png"
-                  alt="Gifted Homes and Apartments"
-                  className="h-full w-auto object-contain"
-                />
+                <p className="pointer-events-none hidden text-xs uppercase tracking-label text-white/50 lg:block">
+                  Move across the water
+                </p>
+
+                <div className="flex w-full items-center justify-center gap-2 md:w-auto">
+                  {rooms.map((room, i) => (
+                    <button
+                      key={room.src}
+                      onClick={() => i !== index && goTo(i)}
+                      aria-label={`Show ${room.name}, view ${i + 1}`}
+                      aria-current={i === index}
+                      className="group relative h-10 w-12 py-4"
+                    >
+                      <span className="block h-[2px] w-full overflow-hidden rounded-full bg-white/25">
+                        {i === index && (
+                          <motion.span
+                            key={`${index}-progress`}
+                            className="block h-full bg-white"
+                            initial={{ width: '0%' }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: ROOM_DURATION / 1000, ease: 'linear' }}
+                          />
+                        )}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </RippleSurface>
+        )}
+
+        {/* Scroll cue */}
+        <div aria-hidden className="pointer-events-none absolute bottom-24 left-1/2 hidden h-12 w-px -translate-x-1/2 overflow-hidden bg-white/20 md:block">
+          <span className="block h-full w-full animate-drip bg-white" />
+        </div>
+      </section>
+    </>
+  )
+}
+
+function Philosophy() {
+  return (
+    <section className="relative py-28 md:py-40">
+      <div className="container mx-auto px-4">
+        <div className="mx-auto max-w-5xl">
+          <Reveal>
+            <Eyebrow>Our philosophy</Eyebrow>
+          </Reveal>
+          <ScrollFillText
+            text="Gifted Homes was birthed in 2024 on one belief: every stay should feel like a gift, to be enjoyed just like life itself."
+            className="display mt-8 text-3xl leading-[1.2] md:text-5xl lg:text-6xl"
+          />
+          <Reveal className="mt-12 grid gap-8 md:grid-cols-2 md:gap-16" delay={0.1}>
+            <p className="text-lg leading-relaxed text-muted">
+              Our shortlets are curated for relaxation, comfort and convenience. Each apartment pairs high-end
+              finishes with the practical things that make a stay effortless, from constant power to a concierge
+              who picks up the phone.
+            </p>
+            <div className="flex items-end">
+              <Link href="/about" className="group inline-flex items-center gap-3 text-fg">
+                <span className="link-draw pb-1 text-lg">Our story</span>
+                <span className="grid h-11 w-11 place-items-center rounded-full border border-line transition-all duration-300 group-hover:border-clay group-hover:bg-clay group-hover:text-on-clay">
+                  <ArrowUpRight className="h-4 w-4" />
+                </span>
               </Link>
             </div>
-            
-            <div className="flex space-x-6">
-              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <AiFillTikTok className="h-6 w-6" />
-              </a>
-              <a 
-                href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <BsWhatsapp className="h-6 w-6" />
-              </a>
-              <a 
-                href="mailto:Horizon2haus@gmail.com" 
-                className="text-gray-600 hover:text-primary dark:text-gray-400"
-              >
-                <MdEmail className="h-6 w-6" />
-              </a>
-            </div>
-            
-            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-              © 2025 Gifted Homes and Apartments. All rights reserved.
-            </div>
-          </div>
+          </Reveal>
         </div>
-      </footer>
+      </div>
+    </section>
+  )
+}
+
+function Residences() {
+  const { properties, loading } = useProperties()
+
+  return (
+    <section className="bg-linen py-28 md:py-36">
+      <div className="container mx-auto px-4">
+        <div className="mb-16 flex flex-col justify-between gap-6 md:mb-24 md:flex-row md:items-end">
+          <div>
+            <Reveal><Eyebrow>The residences</Eyebrow></Reveal>
+            <MaskText text="Homes worth coming back to" className="display mt-6 max-w-2xl text-4xl md:text-6xl" />
+          </div>
+          <Reveal delay={0.2}>
+            <Link href="/properties" className="btn-ghost">
+              All properties <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Reveal>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-8 md:grid-cols-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="aspect-[4/5] animate-pulse rounded-3xl bg-fg/5" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-28 md:space-y-40">
+            {properties.slice(0, 4).map((property, i) => {
+              const flip = i % 2 === 1
+              return (
+                <article key={property._id || property.id} className="grid items-center gap-10 md:grid-cols-12 md:gap-12">
+                  <Link
+                    href={propertyHref(property)}
+                    className={cn('group block md:col-span-7', flip && 'md:order-2')}
+                  >
+                    <ParallaxImage
+                      src={property.thumbnail}
+                      sizes="(min-width: 768px) 58vw, 100vw"
+                      alt={property.title}
+                      className="aspect-[4/5] rounded-3xl md:aspect-[5/6]"
+                    />
+                  </Link>
+                  <div className={cn('md:col-span-5', flip ? 'md:order-1 md:pr-8' : 'md:pl-8')}>
+                    <Reveal>
+                      <p className="font-marcellus text-6xl text-clay/30">{String(i + 1).padStart(2, '0')}</p>
+                      <h3 className="display mt-4 text-[1.75rem] leading-tight md:text-4xl">{property.title}</h3>
+                      <p className="mt-6 flex items-center gap-2 text-sm text-muted">
+                        <MapPin className="h-4 w-4 text-clay" /> {property.location}
+                      </p>
+                      <dl className="mt-8 grid grid-cols-3 border-y border-line py-5 text-sm">
+                        <div>
+                          <dt className="flex items-center gap-1.5 text-muted"><Bed className="h-4 w-4" /> Beds</dt>
+                          <dd className="mt-1 font-marcellus text-2xl">{property.specifications.bedrooms}</dd>
+                        </div>
+                        <div>
+                          <dt className="flex items-center gap-1.5 text-muted"><Bath className="h-4 w-4" /> Baths</dt>
+                          <dd className="mt-1 font-marcellus text-2xl">{property.specifications.bathrooms}</dd>
+                        </div>
+                        <div>
+                          <dt className="flex items-center gap-1.5 text-muted"><Maximize className="h-4 w-4" /> Size</dt>
+                          <dd className="mt-1 font-marcellus text-2xl">{property.specifications.size}</dd>
+                        </div>
+                      </dl>
+                      <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+                        <p className="font-marcellus text-2xl">{property.price}</p>
+                        <Link href={propertyHref(property)} className="btn-clay">
+                          View residence <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </Reveal>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function AmenityBand() {
+  const ref = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const left = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
+  const right = useTransform(scrollYProgress, [0, 1], ['-30%', '0%'])
+  const row = [...amenities, ...amenities]
+
+  const Row = ({ x, outline }: { x: typeof left; outline?: boolean }) => (
+    <motion.div style={{ x }} className="flex w-max items-center gap-10 whitespace-nowrap">
+      {row.map((item, i) => (
+        <span key={i} className="flex items-center gap-10">
+          <span
+            className={cn(
+              'display text-5xl md:text-7xl',
+              outline ? 'text-transparent [-webkit-text-stroke:1px_rgb(var(--c-fg)/0.35)]' : 'text-fg'
+            )}
+          >
+            {item}
+          </span>
+          <span className="h-2.5 w-2.5 rounded-full bg-clay" />
+        </span>
+      ))}
+    </motion.div>
+  )
+
+  return (
+    <section ref={ref} aria-label="Amenities" className="overflow-hidden py-24 md:py-32">
+      <p className="sr-only">Amenities: {amenities.join(', ')}</p>
+      <div aria-hidden className="space-y-6">
+        <Row x={left} />
+        <Row x={right} outline />
+      </div>
+    </section>
+  )
+}
+
+function WaysToBook() {
+  const ways = [
+    {
+      icon: BsWhatsapp,
+      title: 'WhatsApp',
+      body: 'The fastest way. Message our bookings team, ask anything and confirm your dates in minutes.',
+      action: { label: 'Start a chat', href: whatsappLink(), external: true },
+    },
+    {
+      icon: CreditCard,
+      title: 'Pay online',
+      body: 'Pick a residence, choose your dates and pay securely with Paystack. Your reference arrives instantly.',
+      action: { label: 'Choose a residence', href: '/properties', external: false },
+    },
+    {
+      icon: HomeIcon,
+      title: 'Airbnb',
+      body: 'Prefer the platform you know? Every residence is also listed on Airbnb.',
+      action: { label: 'See listings', href: '/properties', external: false },
+    },
+  ]
+
+  return (
+    <section className="py-24 md:py-32">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl">
+          <Reveal><Eyebrow>Booking</Eyebrow></Reveal>
+          <MaskText text="Three easy ways to book" className="display mt-6 text-4xl md:text-6xl" />
+        </div>
+        <div className="mt-16 grid gap-px overflow-hidden rounded-3xl border border-line bg-line md:grid-cols-3">
+          {ways.map((way, i) => (
+            <Reveal key={way.title} delay={i * 0.1} className="group relative bg-canvas p-8 transition-colors duration-500 hover:bg-paper md:p-10">
+              <div className="flex items-center justify-between">
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-clay/10 text-clay transition-transform duration-500 ease-silk group-hover:scale-110">
+                  <way.icon className="h-6 w-6" />
+                </span>
+                <span className="font-marcellus text-lg text-muted">0{i + 1}</span>
+              </div>
+              <h3 className="display mt-10 text-3xl">{way.title}</h3>
+              <p className="mt-3 leading-relaxed text-muted">{way.body}</p>
+              {way.action.external ? (
+                <a href={way.action.href} target="_blank" rel="noopener noreferrer" className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-clay">
+                  <span className="link-draw pb-0.5">{way.action.label}</span> <ArrowUpRight className="h-4 w-4" />
+                </a>
+              ) : (
+                <Link href={way.action.href} className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-clay">
+                  <span className="link-draw pb-0.5">{way.action.label}</span> <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ClosingCta() {
+  const ref = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] })
+  const ringScale = useTransform(scrollYProgress, [0, 1], [0.4, 1.1])
+
+  return (
+    <section ref={ref} className="relative overflow-hidden bg-ink py-32 text-cream md:py-44">
+      <motion.div aria-hidden style={{ scale: ringScale }} className="pointer-events-none absolute left-1/2 top-1/2 h-[60rem] w-[60rem] -translate-x-1/2 -translate-y-1/2">
+        {[1, 0.8, 0.6, 0.4, 0.2].map((s) => (
+          <span key={s} className="absolute inset-0 rounded-full border border-brass/15" style={{ transform: `scale(${s})` }} />
+        ))}
+      </motion.div>
+      <div className="container relative mx-auto px-4 text-center">
+        <Reveal><p className="eyebrow !text-brass">Your stay</p></Reveal>
+        <MaskText text="Your key is waiting" className="display mx-auto mt-6 max-w-3xl text-5xl md:text-7xl" />
+        <Reveal delay={0.3} className="mt-10 flex flex-wrap justify-center gap-3">
+          <Link href="/properties" className="btn bg-cream px-7 py-3.5 text-ink hover:bg-white">
+            View Properties <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href="/contactus" className="btn border border-white/25 px-7 py-3.5 text-cream hover:bg-white/10">
+            Contact us
+          </Link>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen">
+      <SiteHeader overlay />
+      <main>
+        <Hero />
+        <Philosophy />
+        <Residences />
+        <AmenityBand />
+        <WaysToBook />
+        <ClosingCta />
+      </main>
+      <SiteFooter />
+      <WhatsAppButton />
     </div>
   )
 }

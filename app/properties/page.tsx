@@ -1,239 +1,112 @@
 //app/properties/page.tsx
 "use client"
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React from 'react'
 import Link from 'next/link'
-import { Bed, Bath } from 'lucide-react'
-import {  Instagram, } from 'lucide-react'
-import { BsWhatsapp } from 'react-icons/bs'
-import { MdEmail } from 'react-icons/md'
-import { AiFillTikTok } from "react-icons/ai";
-import Image from 'next/image'
+import { Bed, Bath, Maximize, MapPin, ArrowUpRight } from 'lucide-react'
+import SiteHeader from '@/components/site/SiteHeader'
+import SiteFooter from '@/components/site/SiteFooter'
+import WhatsAppButton from '@/components/site/WhatsAppButton'
+import PageHero from '@/components/site/PageHero'
+import { Reveal } from '@/components/site/Reveal'
+import { sized, srcSetFor } from '@/lib/images'
+import { useProperties, propertyHref, ListedProperty } from '@/hooks/useProperties'
 
-interface Property {
-  _id?: string;
-  id?: number;
-  title: string;
-  price: string;
-  location: string;
-  thumbnail: string;
-  description: string;
-  specifications: {
-    bedrooms: number;
-    bathrooms: number;
-    size: string;
-  };
+const PropertyCard = ({ property, index }: { property: ListedProperty; index: number }) => {
+  return (
+    <Reveal delay={(index % 2) * 0.12} as="article">
+      <Link href={propertyHref(property)} className="group block">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-fg/5 sm:aspect-[5/4]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={sized(property.thumbnail, 1080)}
+            srcSet={srcSetFor(property.thumbnail)}
+            sizes="(min-width: 768px) 50vw, 100vw"
+            alt={property.title}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-silk group-hover:scale-[1.06]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <span className="absolute left-5 top-5 rounded-full bg-black/35 px-4 py-1.5 text-sm text-white backdrop-blur-md">
+            {property.price}
+          </span>
+          <span className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full bg-cream text-ink opacity-0 transition-all duration-500 ease-silk group-hover:opacity-100 max-md:opacity-100">
+            <ArrowUpRight className="h-5 w-5 transition-transform duration-500 group-hover:rotate-45" />
+          </span>
+          <div className="absolute inset-x-5 bottom-5 text-white">
+            <p className="flex items-center gap-1.5 text-sm text-white/80">
+              <MapPin className="h-4 w-4" /> {property.location}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="display text-2xl md:text-3xl">{property.title}</h2>
+          </div>
+          <ul className="flex gap-5 text-sm text-muted">
+            <li className="flex items-center gap-1.5"><Bed className="h-4 w-4" /> {property.specifications.bedrooms}</li>
+            <li className="flex items-center gap-1.5"><Bath className="h-4 w-4" /> {property.specifications.bathrooms}</li>
+            <li className="flex items-center gap-1.5"><Maximize className="h-4 w-4" /> {property.specifications.size}</li>
+          </ul>
+        </div>
+        <p className="mt-4 line-clamp-2 max-w-xl text-muted">{property.description}</p>
+      </Link>
+    </Reveal>
+  )
 }
 
-const PropertyCard = ({ property }: { property: Property }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-    className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 dark:bg-gray-800"
-  >
-    <div className="relative h-64 overflow-hidden">
-      <Image
-      width={200}
-      height={200}
-        src={property.thumbnail}
-        alt={property.title}
-        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50" />
-      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
-        <span className="text-white font-semibold">{property.price}</span>
-        <span className="text-white text-sm">{property.location}</span>
-      </div>
-    </div>
-    
-    <div className="p-6">
-      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-        {property.title}
-      </h3>
-      
-      <div className="flex items-center gap-4 mb-4 text-gray-600 dark:text-gray-300">
-        <div className="flex items-center gap-1">
-          <Bed className="h-4 w-4" />
-          <span>{property.specifications.bedrooms}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Bath className="h-4 w-4" />
-          <span>{property.specifications.bathrooms}</span>
-        </div>
-        <span>{property.specifications.size}</span>
-      </div>
-
-      <p className="text-gray-600 mb-6 dark:text-gray-300 line-clamp-2">
-        {property.description}
-      </p>
-
-      <Link 
-        href={`/properties/${property._id || property.id}`}
-        className="block w-full"
-      >
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          View Property
-        </motion.button>
-      </Link>
-    </div>
-  </motion.div>
-)
-
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { properties, loading } = useProperties()
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        console.log('Fetching properties...');
-        const response = await fetch('/api/properties');
-        console.log('API Response status:', response.status);
-        
-        // Check if response is OK
-        if (response.ok) {
-          const data = await response.json();
-          console.log('API Response data:', data);
-          
-          // Check if data has properties array
-          if (data && Array.isArray(data.properties) && data.properties.length > 0) {
-            setProperties(data.properties);
-            return; // Exit early if successful
-          }
-        }
-        
-        // If we get here, either the API failed or returned empty data
-        // Let's use the static data as fallback
-        console.log('API not returning expected data, falling back to static properties...');
-        const { properties: staticProperties } = await import('@/lib/propertyData');
-        setProperties(staticProperties);
-        
-      } catch (error) {
-        console.error('Error fetching properties:', error);
-        
-        // Load static data as fallback
-        console.log('Error occurred, fetching from static data...');
-        const { properties: staticProperties } = await import('@/lib/propertyData');
-        setProperties(staticProperties);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProperties();
-  }, []);
-  
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      
-      {/* Header Section with responsive padding */}
-      <div className="relative bg-primary text-white pt-0 md:pt-0 lg:pt-0 pb-16">
-      <Link href="/">
-        <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-          <Image
-          width={200}
-          height={200}
-            src="/logo.png"
-            alt="Gifted Homes and Apartments"
-            className="h-full w-auto object-contain"
-          />
-        </div>
-        </Link>
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Our Properties
-            </h1>
-            <p className="text-lg opacity-90">
-              Discover your perfect home from our exclusive collection
-            </p>
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900"></div>
-      </div>
+    <div className="min-h-screen">
+      <SiteHeader overlay />
 
-      {/* Properties Grid */}
-      <div className="container mx-auto px-4 py-16">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        ) : (!properties || properties.length === 0) ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-              No properties available at the moment
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Please check back later for new listings
+      <main>
+        <PageHero
+          image="/property2/4.webp"
+          eyebrow="Gifted Homes"
+          title="Our Properties"
+          subtitle="Discover your perfect home from our exclusive collection"
+        />
+
+        <section className="container mx-auto px-4 py-20 md:py-28">
+          <div className="mb-12 flex items-baseline justify-between border-b border-line pb-6">
+            <p className="text-muted">
+              {loading ? 'Loading residences…' : `${properties.length} ${properties.length === 1 ? 'residence' : 'residences'} available`}
             </p>
+            <p className="hidden text-sm text-muted md:block">Prices per night</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {properties.map((property) => (
-              <PropertyCard key={property._id || property.id} property={property} />
-            ))}
-          </div>
-        )}
-      </div>
-      <footer className="bg-white py-12 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
-            <div className="h-20 w-auto md:h-24 lg:h-48 shrink-0">
-              <Link href="/">
-                <Image
-                width={200}
-                height={200}
-                  src="/logo.png"
-                  alt="Gifted Homes and Apartments"
-                  className="h-full w-auto object-contain"
-                />
-              </Link>
+
+          {loading ? (
+            <div className="grid gap-x-10 gap-y-16 md:grid-cols-2">
+              {[0, 1].map((i) => (
+                <div key={i}>
+                  <div className="aspect-[5/4] animate-pulse rounded-3xl bg-fg/5" />
+                  <div className="mt-6 h-8 w-1/2 animate-pulse rounded-full bg-fg/5" />
+                  <div className="mt-3 h-4 w-3/4 animate-pulse rounded-full bg-fg/5" />
+                </div>
+              ))}
             </div>
-            
-            <div className="flex space-x-6">
-              {/* <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Twitter className="h-6 w-6" />
-              </a> */}
-              <a href="https://www.instagram.com/giftedapartments?igsh=MXFtc29ldjFjaGdiOA==" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="https://www.tiktok.com/@gifted_apartments?_t=ZM-8uGMEX3jFZd&_r=1" className="text-gray-600 hover:text-primary dark:text-gray-400">
-                             <AiFillTikTok className="h-6 w-6" />
-                           </a>
-              <a 
-  href="https://wa.link/inwgi0?text=Good%20day,%20I%20would%20like%20to%20book%20a%20stay%20with%20Gifted%20Homes%20and%20Apartments%20please."
-  target="_blank" 
-  rel="noopener noreferrer" 
-  className="text-gray-600 hover:text-primary dark:text-gray-400"
->
-  <BsWhatsapp className="h-6 w-6" />
-</a>
-            <a 
-              href="mailto:Horizon2haus@gmail.com" 
-              className="text-gray-600 hover:text-primary dark:text-gray-400"
-            >
-              <MdEmail className="h-6 w-6" />
-            </a>
+          ) : (!properties || properties.length === 0) ? (
+            <div className="py-12 text-center">
+              <h2 className="display mb-4 text-3xl">No properties available at the moment</h2>
+              <p className="text-muted">Please check back later for new listings</p>
             </div>
-            
-            <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-              © 2025 Gifted Homes and Apartments. All rights reserved.
+          ) : (
+            <div className="grid gap-x-10 gap-y-20 md:grid-cols-2">
+              {properties.map((property, i) => (
+                <div key={property._id || property.id} className={i % 2 === 1 ? 'md:mt-24' : ''}>
+                  <PropertyCard property={property} index={i} />
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
-      </footer>
+          )}
+        </section>
+      </main>
+
+      <SiteFooter />
+      <WhatsAppButton />
     </div>
   )
 }

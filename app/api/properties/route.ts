@@ -4,14 +4,21 @@ import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/mongodb';
 import Property from '@/models/Property';
 
+// Public pages ask for ?public=1 so the CDN can cache the listing; admin requests stay uncached
+const PUBLIC_CACHE = 'public, s-maxage=60, stale-while-revalidate=600';
+
 // GET all properties
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
-    const properties = await Property.find({}).sort({ createdAt: -1 });
+    const properties = await Property.find({}).sort({ createdAt: -1 }).lean();
     
-    return NextResponse.json({ properties });
+    const isPublic = request.nextUrl.searchParams.get('public') === '1';
+    return NextResponse.json(
+      { properties },
+      isPublic ? { headers: { 'Cache-Control': PUBLIC_CACHE } } : undefined
+    );
   } catch (error) {
     console.error('Error fetching properties:', error);
     return NextResponse.json(

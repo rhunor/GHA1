@@ -35,6 +35,10 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      // Resolving the Atlas hosts over IPv6 first was adding seconds to every connection
+      family: 4,
+      // Fail fast instead of hanging for 30s, so pages can fall back to static data
+      serverSelectionTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
